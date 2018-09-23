@@ -50,20 +50,12 @@ class Player {
 
 class Corpo {
   private:
-  float massa;
-  float velocidade;
   float posicao;
-  float coeficienteMola;
-  float viscosidade;
 
   public:
-  Corpo(float massa, float velocidade, float posicao, float coeficienteMola,float viscosidade);
-  void update(float nova_velocidade, float nova_posicao);
-  float get_massa();
-  float get_velocidade();
+  Corpo(float posicao);
+  void update(float nova_posicao);
   float get_posicao();
-  float get_coeficienteMola();
-  float get_viscosidade();
 };
 
 class ListaDeCorpos {
@@ -77,25 +69,52 @@ class ListaDeCorpos {
     std::vector<Corpo*> *get_corpos();
 };
 
-class Fisica {
+class Tiro {
   private:
-    ListaDeCorpos *lista;
+  float velocidade;
+  float posicaoHorizontal;
+  float posicaoVertical;
 
   public:
-    Fisica(ListaDeCorpos *ldc);
-    void add_corpo(Corpo *c);
-    void choque(char option, uint64_t deltaT, unsigned int turn);
+  Tiro(float velocidade, float posicaoHorizontal, float posicaoVertical);
+  void update(float nova_velocidade, float nova_posicao_horizontal, float nova_posicao_vertical);
+  float get_velocidade();
+  float get_posicaoHorizontal();
+  float get_posicaoVertical();
+};
+
+class ListaDeTiros {
+ private:
+    std::vector<Tiro*> *tiros;
+
+  public:
+    ListaDeTiros();
+    void hard_copy(ListaDeTiros *ldt);
+    void add_tiro(Tiro *t);
+    std::vector<Tiro*> *get_tiros();
+};
+
+class Fisica {
+  private:
+    ListaDeCorpos *lista_corpos;
+    ListaDeTiros *lista_tiros;  
+
+  public:
+    Fisica(ListaDeCorpos *ldc, ListaDeTiros *ldt);
+    void movimento(char option, unsigned int turn);
     void update(float deltaT);
+    void tiro(float deltaT, unsigned int turn);
 };
 
 class Tela {
   private:
-    ListaDeCorpos *lista, *lista_anterior;
+    ListaDeCorpos *lista_corpos, *lista_corpos_anterior;
+    ListaDeTiros *lista_tiros, *lista_tiros_anterior;
     int maxI, maxJ;
     float maxX, maxY;
 
   public:
-    Tela(ListaDeCorpos *ldc, int maxI, int maxJ, float maxX, float maxY);
+    Tela(ListaDeCorpos *ldc, ListaDeTiros *ldt, int maxI, int maxJ, float maxX, float maxY);
     ~Tela();
     void stop();
     void init();

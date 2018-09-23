@@ -174,37 +174,65 @@ void Player::stop() {
 
 }
 
-Corpo::Corpo(float massa, float velocidade, float posicao, float coeficienteMola, float viscosidade) {
-  this->massa = massa;
+Tiro::Tiro (float velocidade, float posicaoHorizontal, float posicaoVertical) {
   this->velocidade = velocidade;
-  this->posicao = posicao;
-  this->coeficienteMola = coeficienteMola;
-  this->viscosidade = viscosidade;
+  this->posicaoHorizontal = posicaoHorizontal;
+  this->posicaoVertical = posicaoVertical;
 }
 
-void Corpo::update(float nova_velocidade, float nova_posicao) {
-    this->velocidade = nova_velocidade;
-    this->posicao = nova_posicao;
+void Tiro::update(float nova_velocidade, float nova_posicao_horizontal, float nova_posicao_vertical) {
+  this->velocidade = nova_velocidade;
+  this->posicaoHorizontal = nova_posicao_horizontal;
+  this->posicaoVertical = nova_posicao_vertical;
 }
 
-float Corpo::get_massa() {
-  return this->massa;
-}
-
-float Corpo::get_velocidade() {
+float Tiro::get_velocidade() {
   return this->velocidade;
+}
+
+float Tiro::get_posicaoHorizontal() {
+  return this->posicaoHorizontal;
+}
+
+float Tiro::get_posicaoVertical() {
+  return this->posicaoVertical;
+}
+
+ListaDeTiros::ListaDeTiros() {
+  this->tiros = new std::vector<Tiro *>(0);
+}
+
+void ListaDeTiros::hard_copy(ListaDeTiros *ldt) {
+  std::vector<Tiro *> *tiros = ldt->get_tiros();
+
+  for (int k=0; k<tiros->size(); k++) {
+    Tiro *t = new Tiro( (*tiros)[k]->get_velocidade(),\
+                          (*tiros)[k]->get_posicaoHorizontal(),\
+                          (*tiros)[k]->get_posicaoVertical()
+                        );
+    this->add_tiro(t);
+  }
+
+}
+
+void ListaDeTiros::add_tiro(Tiro *t) {
+  (this->tiros)->push_back(t);
+}
+
+std::vector<Tiro*> *ListaDeTiros::get_tiros() {
+  return (this->tiros);
+}
+
+Corpo::Corpo(float posicao) {
+  this->posicao = posicao;
+}
+
+void Corpo::update(float nova_posicao) {
+  this->posicao = nova_posicao;
 }
 
 float Corpo::get_posicao() {
   return this->posicao;
-}
-
-float Corpo::get_coeficienteMola() {
-  return this->coeficienteMola;
-}
-
-float Corpo::get_viscosidade() {
-  return this->viscosidade;
 }
 
 ListaDeCorpos::ListaDeCorpos() {
@@ -215,12 +243,7 @@ void ListaDeCorpos::hard_copy(ListaDeCorpos *ldc) {
   std::vector<Corpo *> *corpos = ldc->get_corpos();
 
   for (int k=0; k<corpos->size(); k++) {
-    Corpo *c = new Corpo( (*corpos)[k]->get_massa(),\
-                          (*corpos)[k]->get_posicao(),\
-                          (*corpos)[k]->get_velocidade(),\
-                          (*corpos)[k]->get_coeficienteMola(),\
-                          (*corpos)[k]->get_viscosidade() 
-                        );
+    Corpo *c = new Corpo((*corpos)[k]->get_posicao());
     this->add_corpo(c);
   }
 
@@ -234,52 +257,61 @@ std::vector<Corpo*> *ListaDeCorpos::get_corpos() {
   return (this->corpos);
 }
 
-Fisica::Fisica(ListaDeCorpos *ldc) {
-  this->lista = ldc;
+Fisica::Fisica(ListaDeCorpos *ldc, ListaDeTiros *ldt) {
+  this->lista_corpos = ldc;
+  this->lista_tiros = ldt;
 }
 
 void Fisica::update(float deltaT) {
   // Atualiza parametros dos corpos!
-  std::vector<Corpo *> *c = this->lista->get_corpos();
+  std::vector<Corpo *> *c = this->lista_corpos->get_corpos();
+  std::vector<Tiro *> *t = this->lista_tiros->get_tiros();
 }
 
-void Fisica::choque(char option, uint64_t deltaT, unsigned int turn) {
+void Fisica::movimento(char option, unsigned int turn) {
   // Atualiza parametros dos corpos!
-  std::vector<Corpo *> *c = this->lista->get_corpos();
-  int new_pos ;
-  for (int i = 0; i < (*c).size(); i++) {
-    if(turn==1 && i==0){
-      new_pos = ((*c)[i]->get_posicao());
-    if(option=='w') {
-      if(new_pos<59){
-       ++new_pos;        
-      }
-    }else if(option=='s') {
-      if(new_pos>0){
-        --new_pos;    
-      }
+  std::vector<Corpo *> *c = this->lista_corpos->get_corpos();
+  std::vector<Tiro *> *t = this->lista_tiros->get_tiros(); 
+  int new_pos;
+  new_pos = ((*c)[turn]->get_posicao());
+  if (option=='w') {
+    if (new_pos<59) {
+     ++new_pos;        
     }
-    (*c)[i]->update(0, new_pos);
-    } else if(turn==2 && i==1){
-      new_pos = ((*c)[i]->get_posicao());
-    if(option=='w') {
-      if(new_pos<59){
-       ++new_pos;        
-      }
-    }else if(option=='s') {
-      if(new_pos>0){
-        --new_pos;    
-      }
+  } 
+  else if (option=='s') {
+    if (new_pos>0) {
+      --new_pos;    
     }
-    (*c)[i]->update(0, new_pos);
-    }
-    
   }
+  (*c)[turn]->update(new_pos);
+  (*t)[turn]->update(0, new_pos, 14);    
 }
-Tela::Tela(ListaDeCorpos *ldc, int maxI, int maxJ, float maxX, float maxY) {
-  this->lista = ldc;
-  this->lista_anterior = new ListaDeCorpos();
-  this->lista_anterior->hard_copy(this->lista);
+
+void Fisica::tiro(float deltaT, unsigned int turn) {
+  // Atualiza parametros dos corpos!
+  std::vector<Tiro *> *t = this->lista_tiros->get_tiros(); 
+
+  float new_vel = (*t)[turn]->get_velocidade() + (float)deltaT * (-10.0)/1000;
+  float new_pos_hor = (*t)[turn]->get_posicaoHorizontal() + 2;
+  float new_pos_ver = (*t)[turn]->get_posicaoVertical() + (float)deltaT * new_vel/1000;
+
+  if (new_pos_ver < 0) {
+      new_pos_ver *= -1;
+      new_vel *= -1;
+  }
+
+  (*t)[turn]->update(new_vel, new_pos_hor, new_pos_ver);   
+}
+
+
+Tela::Tela(ListaDeCorpos *ldc, ListaDeTiros *ldt, int maxI, int maxJ, float maxX, float maxY) {
+  this->lista_corpos = ldc;
+  this->lista_corpos_anterior = new ListaDeCorpos();
+  this->lista_corpos_anterior->hard_copy(this->lista_corpos);
+  this->lista_tiros = ldt;
+  this->lista_tiros_anterior = new ListaDeTiros();
+  this->lista_tiros_anterior->hard_copy(this->lista_tiros);
   this->maxI = maxI;
   this->maxJ = maxJ;
   this->maxX = maxX;
@@ -293,36 +325,59 @@ void Tela::init() {
 }
 
 void Tela::update() {
-  int i;
+  int i, j;
 
-  std::vector<Corpo *> *corpos_old = this->lista_anterior->get_corpos();
+  std::vector<Corpo*> *corpos_old = this->lista_corpos_anterior->get_corpos();
+  std::vector<Tiro*> *tiros_old = this->lista_tiros_anterior->get_tiros();
 
   // Apaga corpos na tela
-  for (int k=0; k<corpos_old->size(); k++)
-  {
-    i = (int) ((*corpos_old)[k]->get_posicao()) * \
+  for (int k=0; k<corpos_old->size(); k++) {
+    j = (int) ((*corpos_old)[k]->get_posicao()) * \
+        (this->maxJ / this->maxY);
+    if(j>-20 && j<60){
+      move(15, j);   /* Move cursor to position */
+      echochar(' ');  /* Prints character, advances a position */
+    }
+  }
+
+  for (int k=0; k<tiros_old->size(); k++) {
+    i = (int) ((*tiros_old)[k]->get_posicaoVertical()) * \
         (this->maxI / this->maxX);
-    if(i>-20 && i<60){
-     move(15, i);   /* Move cursor to position */
-    echochar(' ');  /* Prints character, advances a position */
+    j = (int) ((*tiros_old)[k]->get_posicaoHorizontal()) * \
+        (this->maxJ / this->maxY);
+    if(i>-20 && i<60 && j>-20 && j<60) {
+      move(i, j);   /* Move cursor to position */
+      echochar(' ');  /* Prints character, advances a position */
     }
   }
 
   // Desenha corpos na tela
-  std::vector<Corpo *> *corpos = this->lista->get_corpos();
+  std::vector<Corpo *> *corpos = this->lista_corpos->get_corpos();
+  std::vector<Tiro *> *tiros = this->lista_tiros->get_tiros();
 
-  for (int k=0; k<corpos->size(); k++)
-  {
-    i = (int) ((*corpos)[k]->get_posicao()) * \
-        (this->maxI / this->maxX);
-     if(i>-20 && i<60){
-        move(15, i);   /* Move cursor to position */
+  for (int k=0; k<corpos->size(); k++) {
+    j = (int) ((*corpos)[k]->get_posicao()) * \
+        (this->maxJ / this->maxY);
+     if(j>-20 && j<60){
+        move(15, j);   /* Move cursor to position */
         echochar('*');  /* Prints character, advances a position */
 
-    }
-
+     }
     // Atualiza corpos antigos
-    (*corpos_old)[k]->update((*corpos)[k]->get_velocidade(), (*corpos)[k]->get_posicao());
+    (*corpos_old)[k]->update((*corpos)[k]->get_posicao());
+  }
+
+  for (int k=0; k<tiros->size(); k++) {
+    i = (int) ((*tiros_old)[k]->get_posicaoVertical()) * \
+        (this->maxI / this->maxX);
+    j = (int) ((*tiros_old)[k]->get_posicaoHorizontal()) * \
+        (this->maxJ / this->maxY);
+     if(i>-20 && i<60 && j>-20 && j<60){
+      move(i, j);   /* Move cursor to position */
+      echochar('*');  /* Prints character, advances a position */
+     }
+    // Atualiza corpos antigos
+    (*tiros_old)[k]->update((*tiros)[k]->get_velocidade(), (*tiros)[k]->get_posicaoHorizontal(), (*tiros)[k]->get_posicaoVertical());
   }
   // Atualiza tela
   refresh();
@@ -335,21 +390,6 @@ void Tela::stop() {
 Tela::~Tela() {
   this->stop();;
 }
-
-/*
-class Teclado {
-  private:
-    char ultima_captura;
-    int rodando;
-
-  public:
-    Teclado();
-    ~Teclado();
-    void stop();
-    void init();
-    char getchar();
-}
-*/
 
 void threadfun (char *keybuffer, int *control)
 {

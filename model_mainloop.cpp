@@ -13,17 +13,22 @@ uint64_t get_now_ms() {
 int main ()
 {
 //Corpo::Corpo(float massa, float velocidade, float posicao, float coeficienteMola, float viscosidade) {
-  Corpo *c1 = new Corpo(10, 0, 0, 0, 0);
-  Corpo *c2 = new Corpo(10, 0, 59, 0, 0);
-  unsigned int turn = 1;
+  Corpo *c1 = new Corpo(0);
+  Corpo *c2 = new Corpo(29);
+  Tiro *tt1 = new Tiro(0,0,14);
+  Tiro *tt2 = new Tiro(0,29,14);
+  unsigned int turn = 0;
 
-  ListaDeCorpos *l = new ListaDeCorpos();
-  l->add_corpo(c1);
-  l->add_corpo(c2);
+  ListaDeCorpos *lc = new ListaDeCorpos();
+  ListaDeTiros *lt = new ListaDeTiros();
+  lc->add_corpo(c1);
+  lc->add_corpo(c2);
+  lt->add_tiro(tt1);
+  lt->add_tiro(tt2);
 
-  Fisica *f = new Fisica(l);
+  Fisica *f = new Fisica(lc, lt);
 
-  Tela *tela = new Tela(l, 20, 20, 20, 20);
+  Tela *tela = new Tela(lc, lt, 20, 20, 20, 20);
   tela->init();
 
   Teclado *teclado = new Teclado();
@@ -33,7 +38,9 @@ int main ()
   uint64_t t1;
   uint64_t deltaT;
   uint64_t T;
-
+  uint64_t tiro = 0;
+  uint64_t contTiro;
+  
   int i = 0;
 
   Audio::Sample *asample;
@@ -55,7 +62,7 @@ int main ()
   
   T = get_now_ms();
   t1 = T;
-        player->play(asample);
+  player->play(asample);
 
   while (1) {
     // Atualiza timers
@@ -71,25 +78,38 @@ int main ()
 
     // Lê o teclado
     char c = teclado->getchar();
-    if (c=='w') {
-      f->choque('w',deltaT, turn);
+    if (c=='w' && !tiro) {
+      f->movimento('w', turn);
       asample->set_position(0);
     }
-    if(c=='s'){
-      f->choque('s',deltaT, turn);
+    if (c=='s' && !tiro) {
+      f->movimento('s', turn);
       asample->set_position(0);
     }    
     if (c=='q') {
       break;
     }
 
+    if (c=='t' || tiro) {
+      f->tiro(deltaT, turn);
+      tiro = 1;
+      contTiro++;
+      if (contTiro >= 30) {
+      	tiro = 0;
+      	contTiro = 0;
+      	turn = !turn;
+	    T = get_now_ms();
+	    t1 = T;
+	  }
+    }
+
     // Condicao de parada
-    if ( (t1-T) > 15000){
-      if(turn==1){
-        turn=2;
-      }else if(turn==2){
-        turn=1;
-      }
+    if (!tiro) {
+	    if ((t1-T) > 15000) {
+	      turn = !turn;
+	      T = get_now_ms();
+	      t1 = T;
+	  }
     }
 
     std::this_thread::sleep_for (std::chrono::milliseconds(100));
