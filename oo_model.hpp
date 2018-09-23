@@ -118,7 +118,7 @@ class Tela {
     ~Tela();
     void stop();
     void init();
-    void update();
+    void update(unsigned int t, unsigned int tiro);
 };
 
 void threadfun (char *keybuffer, int *control);

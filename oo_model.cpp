@@ -293,7 +293,9 @@ void Fisica::tiro(float deltaT, unsigned int turn) {
   std::vector<Tiro *> *t = this->lista_tiros->get_tiros(); 
 
   float new_vel = (*t)[turn]->get_velocidade() + (float)deltaT * (-10.0)/1000;
-  float new_pos_hor = (*t)[turn]->get_posicaoHorizontal() + 2;
+  float new_pos_hor;
+  if (!turn) new_pos_hor = (*t)[turn]->get_posicaoHorizontal() + 2;
+  else new_pos_hor = (*t)[turn]->get_posicaoHorizontal() - 2;
   float new_pos_ver = (*t)[turn]->get_posicaoVertical() + (float)deltaT * new_vel/1000;
 
   if (new_pos_ver < 0) {
@@ -324,8 +326,24 @@ void Tela::init() {
   curs_set(0);           /* Do not display cursor */
 }
 
-void Tela::update() {
+void Tela::update(unsigned int t, unsigned int tiro) {
   int i, j;
+  int timer = t/100;
+  char timerChar;
+
+  for (int k=0; k < 6; k++) {
+      move(1, k);   /* Move cursor to position */
+      echochar(' ');  /* Prints character, advances a position */
+  }
+
+  if (!tiro) {
+    for (int k=5; timer > 0; k--) {
+      timerChar = timer%10 + '0';
+      timer = timer / 10;
+      move(1, k);   /* Move cursor to position */
+      echochar(timerChar);  /* Prints character, advances a position */
+    }
+  }
 
   std::vector<Corpo*> *corpos_old = this->lista_corpos_anterior->get_corpos();
   std::vector<Tiro*> *tiros_old = this->lista_tiros_anterior->get_tiros();
@@ -334,10 +352,10 @@ void Tela::update() {
   for (int k=0; k<corpos_old->size(); k++) {
     j = (int) ((*corpos_old)[k]->get_posicao()) * \
         (this->maxJ / this->maxY);
-    if(j>-20 && j<60){
+   // if(j>-20 && j<60){
       move(15, j);   /* Move cursor to position */
       echochar(' ');  /* Prints character, advances a position */
-    }
+    //}
   }
 
   for (int k=0; k<tiros_old->size(); k++) {

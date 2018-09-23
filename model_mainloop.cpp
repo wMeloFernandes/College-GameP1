@@ -71,10 +71,9 @@ int main ()
     deltaT = t1-t0;
     // Atualiza modelo
     f->update(deltaT);
-    std::cout<< deltaT;
 
     // Atualiza tela
-    tela->update();
+    tela->update(t1-T, tiro);
 
     // Lê o teclado
     char c = teclado->getchar();
