@@ -43,13 +43,13 @@ int main ()
   
   int i = 0;
 
-  Audio::Sample *asample;
-  asample = new Audio::Sample();
-  asample->load("assets/blip.dat");
+  //Audio::Sample *asample;
+  //asample = new Audio::Sample();
+  //asample->load("assets/blip.dat");
 
-  Audio::Player *player;
-  player = new Audio::Player();
-  player->init();
+  //Audio::Player *player;
+  //player = new Audio::Player();
+  //player->init();
 
   // Espera
   while (1) {
@@ -58,11 +58,11 @@ int main ()
     if (t1-t0 > 500) break;
   }
 
-  player->play(asample);
+  //player->play(asample);
   
   T = get_now_ms();
   t1 = T;
-  player->play(asample);
+  //player->play(asample);
 
   while (1) {
     // Atualiza timers
@@ -79,11 +79,11 @@ int main ()
     char c = teclado->getchar();
     if (c=='w' && !tiro) {
       f->movimento('w', turn);
-      asample->set_position(0);
+      //asample->set_position(0);
     }
     if (c=='s' && !tiro) {
       f->movimento('s', turn);
-      asample->set_position(0);
+      //asample->set_position(0);
     }    
     if (c=='q') {
       break;
@@ -114,7 +114,7 @@ int main ()
     std::this_thread::sleep_for (std::chrono::milliseconds(100));
     i++;
   }
-  player->stop();
+  //player->stop();
   tela->stop();
   teclado->stop();
   return 0;

@@ -276,11 +276,14 @@ void Fisica::movimento(char option, unsigned int turn) {
   new_pos = ((*c)[turn]->get_posicao());
   if (option=='w') {
     if (new_pos<59) {
-     ++new_pos;        
+      if((turn==0 && new_pos<14) || turn ==1){
+        ++new_pos;        
+      }   
     }
   } 
   else if (option=='s') {
     if (new_pos>0) {
+      if((turn==1 && new_pos>16) || turn==0)
       --new_pos;    
     }
   }
