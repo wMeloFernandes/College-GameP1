@@ -1,6 +1,9 @@
 #ifndef OO_MODEL_HPP
 #define OO_MODEL_HPP
 
+#define TARGET_HITED 1
+#define TARGET_NOT_HITED 0
+
 #include "portaudio.h"
 #include <vector>
 #include <thread>
@@ -57,6 +60,7 @@ class Corpo {
   public:
   Corpo(float posicao);
   void update(float nova_posicao);
+  void updateLife(int life);
   float get_posicao();
   int getLife();
   void setLife();
@@ -106,7 +110,7 @@ class Fisica {
 
   public:
     Fisica(ListaDeCorpos *ldc, ListaDeTiros *ldt);
-    void movimento(char option, unsigned int turn);
+    void movimento(char option, unsigned int turn, int isTargetHited);
     void update(float deltaT);
     void tiro(float deltaT, unsigned int turn);
 };

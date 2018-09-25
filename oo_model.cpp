@@ -232,6 +232,10 @@ void Corpo::update(float nova_posicao) {
   this->posicao = nova_posicao;
 }
 
+void Corpo::updateLife(int life){
+  this->life = life;
+}
+
 
 float Corpo::get_posicao() {
   return this->posicao;
@@ -249,7 +253,7 @@ void Corpo::setLife(){
 }
 
 void Corpo::less_life() {
-  this->life = --this->life;
+  this->life = this->life -1;
 }
 
 
@@ -286,12 +290,14 @@ void Fisica::update(float deltaT) {
   std::vector<Tiro *> *t = this->lista_tiros->get_tiros();
 }
 
-void Fisica::movimento(char option, unsigned int turn) {
+void Fisica::movimento(char option, unsigned int turn, int isTargetHited) {
   // Atualiza parametros dos corpos!
   std::vector<Corpo *> *c = this->lista_corpos->get_corpos();
   std::vector<Tiro *> *t = this->lista_tiros->get_tiros(); 
   int new_pos;
+  int new_life;
   new_pos = ((*c)[turn]->get_posicao());
+  new_life = ((*c)[turn]->getLife());
   if (option=='w') {
     if (new_pos<59) {
       if((turn==0 && new_pos<30) || turn ==1){
@@ -302,9 +308,20 @@ void Fisica::movimento(char option, unsigned int turn) {
   else if (option=='s') {
     if (new_pos>0) {
       if((turn==1 && new_pos>32) || turn==0)
-      --new_pos;    
+      --new_pos;
     }
   }
+  else if(option=='m'){     //SERÁ APAGADO ESSE TRECHO, DEIXEI APENAS PARA VOCÊ VER FUNCIONANDO
+    if(new_life>0){
+      --new_life;
+    }
+  }
+  // else if(option=='m' && isTargetHited == TARGET_HITED){     UTILIZAR ESSE IF QUANDO TERMINAR A TASK DO DISPARO
+  //   if(new_life>0){
+  //     --new_life;    
+  //   }
+  // }
+  (*c)[turn]->updateLife(new_life);
   (*c)[turn]->update(new_pos);
   (*t)[turn]->update(0, new_pos, 14);    
 }
@@ -401,7 +418,6 @@ void Tela::update(unsigned int t, unsigned int tiro) {
      if(j>-20 && j<60){
         move(15, j);   /* Move cursor to position */
         echochar('*');  /* Prints character, advances a position */
-
      }
     // Atualiza corpos antigos
     (*corpos_old)[k]->update((*corpos)[k]->get_posicao());
@@ -426,6 +442,11 @@ void Tela::update(unsigned int t, unsigned int tiro) {
   for(int i=0;i<strlen(player1);i++){
     echochar(player1[i]);
   }
+
+  move(3,20);
+  for(int i=0;i<=(*corpos)[0]->getLife();i++){
+    echochar(' ');  
+  }
   move(3,20);
   for(int i=0;i<(*corpos)[0]->getLife();i++){
     echochar('-');  
@@ -437,10 +458,17 @@ void Tela::update(unsigned int t, unsigned int tiro) {
   for(int i=0; i<strlen(player2);i++){
     echochar(player2[i]);    
   }
+
+  move(3,50);
+  for(int i=0;i<=(*corpos)[1]->getLife();i++){
+    echochar(' ');  
+  }
   move(3,50);
   for(int i=0;i<(*corpos)[1]->getLife();i++){
     echochar('-');  
   }
+
+
   // Atualiza tela
   refresh();
 }
