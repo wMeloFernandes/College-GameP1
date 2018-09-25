@@ -6,7 +6,7 @@
 #include <sstream>
 #include <string>
 #include <random>
-
+#include <cstring>
 
 #include "oo_model.hpp"
 
@@ -225,15 +225,33 @@ std::vector<Tiro*> *ListaDeTiros::get_tiros() {
 
 Corpo::Corpo(float posicao) {
   this->posicao = posicao;
+  this->life = 3; 
 }
 
 void Corpo::update(float nova_posicao) {
   this->posicao = nova_posicao;
 }
 
+
 float Corpo::get_posicao() {
   return this->posicao;
 }
+
+
+int Corpo::getLife(){
+  return this->life;
+}
+
+void Corpo::setLife(){
+  int x = getLife();
+  x = x-1;
+  this->life = x;
+}
+
+void Corpo::less_life() {
+  this->life = --this->life;
+}
+
 
 ListaDeCorpos::ListaDeCorpos() {
   this->corpos = new std::vector<Corpo *>(0);
@@ -276,14 +294,14 @@ void Fisica::movimento(char option, unsigned int turn) {
   new_pos = ((*c)[turn]->get_posicao());
   if (option=='w') {
     if (new_pos<59) {
-      if((turn==0 && new_pos<14) || turn ==1){
-        ++new_pos;        
+      if((turn==0 && new_pos<30) || turn ==1){
+        ++new_pos;
       }   
     }
   } 
   else if (option=='s') {
     if (new_pos>0) {
-      if((turn==1 && new_pos>16) || turn==0)
+      if((turn==1 && new_pos>32) || turn==0)
       --new_pos;    
     }
   }
@@ -324,14 +342,14 @@ Tela::Tela(ListaDeCorpos *ldc, ListaDeTiros *ldt, int maxI, int maxJ, float maxX
 }
 
 void Tela::init() {
-  initscr();			       /* Start curses mode 		*/
-	raw();				         /* Line buffering disabled	*/
+  initscr();             /* Start curses mode     */
+  raw();                 /* Line buffering disabled */
   curs_set(0);           /* Do not display cursor */
 }
 
 void Tela::update(unsigned int t, unsigned int tiro) {
   int i, j;
-  int timer = t/100;
+  int timer = t/1000;
   char timerChar;
 
   for (int k=0; k < 6; k++) {
@@ -366,7 +384,7 @@ void Tela::update(unsigned int t, unsigned int tiro) {
         (this->maxI / this->maxX);
     j = (int) ((*tiros_old)[k]->get_posicaoHorizontal()) * \
         (this->maxJ / this->maxY);
-    if(i>-20 && i<60 && j>-20 && j<60) {
+    if(i>-23 && i<60 && j>-20 && j<60) {
       move(i, j);   /* Move cursor to position */
       echochar(' ');  /* Prints character, advances a position */
     }
@@ -375,6 +393,7 @@ void Tela::update(unsigned int t, unsigned int tiro) {
   // Desenha corpos na tela
   std::vector<Corpo *> *corpos = this->lista_corpos->get_corpos();
   std::vector<Tiro *> *tiros = this->lista_tiros->get_tiros();
+
 
   for (int k=0; k<corpos->size(); k++) {
     j = (int) ((*corpos)[k]->get_posicao()) * \
@@ -389,9 +408,9 @@ void Tela::update(unsigned int t, unsigned int tiro) {
   }
 
   for (int k=0; k<tiros->size(); k++) {
-    i = (int) ((*tiros_old)[k]->get_posicaoVertical()) * \
+    i = (int) ((*tiros)[k]->get_posicaoVertical()) * \
         (this->maxI / this->maxX);
-    j = (int) ((*tiros_old)[k]->get_posicaoHorizontal()) * \
+    j = (int) ((*tiros)[k]->get_posicaoHorizontal()) * \
         (this->maxJ / this->maxY);
      if(i>-20 && i<60 && j>-20 && j<60){
       move(i, j);   /* Move cursor to position */
@@ -399,6 +418,28 @@ void Tela::update(unsigned int t, unsigned int tiro) {
      }
     // Atualiza corpos antigos
     (*tiros_old)[k]->update((*tiros)[k]->get_velocidade(), (*tiros)[k]->get_posicaoHorizontal(), (*tiros)[k]->get_posicaoVertical());
+  }
+
+    //Position Player 1
+  char player1[] = "Player 1 LIFE";
+  move(2,15);
+  for(int i=0;i<strlen(player1);i++){
+    echochar(player1[i]);
+  }
+  move(3,20);
+  for(int i=0;i<(*corpos)[0]->getLife();i++){
+    echochar('-');  
+  }
+
+  //Position Player 2
+  char player2[] = "Player 2 LIFE";
+  move(2,45);
+  for(int i=0; i<strlen(player2);i++){
+    echochar(player2[i]);    
+  }
+  move(3,50);
+  for(int i=0;i<(*corpos)[1]->getLife();i++){
+    echochar('-');  
   }
   // Atualiza tela
   refresh();
@@ -432,9 +473,9 @@ Teclado::~Teclado() {
 
 void Teclado::init() {
   // Inicializa ncurses
-  raw();				         /* Line buffering disabled	*/
-	keypad(stdscr, TRUE);	 /* We get F1, F2 etc..		*/
-	noecho();			         /* Don't echo() while we do getch */
+  raw();                 /* Line buffering disabled */
+  keypad(stdscr, TRUE);  /* We get F1, F2 etc..   */
+  noecho();              /* Don't echo() while we do getch */
   curs_set(0);           /* Do not display cursor */
 
   this->rodando = 1;

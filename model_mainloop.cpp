@@ -12,12 +12,14 @@ uint64_t get_now_ms() {
 
 int main ()
 {
-//Corpo::Corpo(float massa, float velocidade, float posicao, float coeficienteMola, float viscosidade) {
   Corpo *c1 = new Corpo(0);
-  Corpo *c2 = new Corpo(29);
+  Corpo *c2 = new Corpo(59);
   Tiro *tt1 = new Tiro(0,0,14);
-  Tiro *tt2 = new Tiro(0,29,14);
+  Tiro *tt2 = new Tiro(0,59,14);
   unsigned int turn = 0;
+  int mLifePlayer1 = 4;
+  int mLifePlayer2 = 4;
+  int mAsync = 0;
 
   ListaDeCorpos *lc = new ListaDeCorpos();
   ListaDeTiros *lt = new ListaDeTiros();
@@ -73,18 +75,17 @@ int main ()
     f->update(deltaT);
 
     // Atualiza tela
-    tela->update(t1-T, tiro);
-
+    tela->update(t1-T, tiro);    
     // Lê o teclado
     char c = teclado->getchar();
-    if (c=='w' && !tiro) {
+    if (c == 'w' && !tiro) {
       f->movimento('w', turn);
       //asample->set_position(0);
     }
-    if (c=='s' && !tiro) {
+    if (c == 's' && !tiro) {
       f->movimento('s', turn);
       //asample->set_position(0);
-    }    
+    }
     if (c=='q') {
       break;
     }
@@ -94,23 +95,22 @@ int main ()
       tiro = 1;
       contTiro++;
       if (contTiro >= 30) {
-      	tiro = 0;
-      	contTiro = 0;
-      	turn = !turn;
-	    T = get_now_ms();
-	    t1 = T;
-	  }
+        tiro = 0;
+        contTiro = 0;
+        turn = !turn;
+      T = get_now_ms();
+      t1 = T;
+    }
     }
 
     // Condicao de parada
     if (!tiro) {
-	    if ((t1-T) > 15000) {
-	      turn = !turn;
-	      T = get_now_ms();
-	      t1 = T;
-	  }
+      if ((t1-T) >10000) {
+        turn = !turn;
+        T = get_now_ms();
+        t1 = T;
+      }
     }
-
     std::this_thread::sleep_for (std::chrono::milliseconds(100));
     i++;
   }

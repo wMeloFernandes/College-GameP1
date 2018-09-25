@@ -51,11 +51,16 @@ class Player {
 class Corpo {
   private:
   float posicao;
+  int life;
+
 
   public:
   Corpo(float posicao);
   void update(float nova_posicao);
   float get_posicao();
+  int getLife();
+  void setLife();
+  void less_life();
 };
 
 class ListaDeCorpos {
