@@ -56,7 +56,6 @@ class Corpo {
   float posicao;
   int life;
 
-
   public:
   Corpo(float posicao);
   void update(float nova_posicao);
@@ -83,13 +82,17 @@ class Tiro {
   float velocidade;
   float posicaoHorizontal;
   float posicaoVertical;
+  float forca;
 
   public:
-  Tiro(float velocidade, float posicaoHorizontal, float posicaoVertical);
-  void update(float nova_velocidade, float nova_posicao_horizontal, float nova_posicao_vertical);
+  Tiro(float velocidade, float posicaoHorizontal, float posicaoVertical, float forca);
+  void update(float nova_velocidade, float nova_posicao_horizontal, float nova_posicao_vertical, float nova_forca);
   float get_velocidade();
   float get_posicaoHorizontal();
   float get_posicaoVertical();
+  float get_forca();
+  void setDownForca();
+  void setUpForca();
 };
 
 class ListaDeTiros {
@@ -110,9 +113,9 @@ class Fisica {
 
   public:
     Fisica(ListaDeCorpos *ldc, ListaDeTiros *ldt);
-    void movimento(char option, unsigned int turn, int isTargetHited);
-    void update(float deltaT);
-    void tiro(float deltaT, unsigned int turn);
+    void movimento(char option, unsigned int turn);
+    void tiro(float deltaT, unsigned int turn, int *mFloorHited);
+    void alteraForca (char option, unsigned int turn);
 };
 
 class Tela {
@@ -127,7 +130,7 @@ class Tela {
     ~Tela();
     void stop();
     void init();
-    void update(unsigned int t, unsigned int tiro);
+    void update(unsigned int t, unsigned int tiro, unsigned int turn);
 };
 
 void threadfun (char *keybuffer, int *control);

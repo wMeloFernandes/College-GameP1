@@ -5,20 +5,18 @@
 
 #include "oo_model.hpp"
 
-
 using namespace std::chrono;
 uint64_t get_now_ms() {
   return duration_cast<milliseconds>(steady_clock::now().time_since_epoch()).count();
 }
 
-int main ()
-{
-  Corpo *c1 = new Corpo(0);
-  Corpo *c2 = new Corpo(59);
-  Tiro *tt1 = new Tiro(0,0,14);
-  Tiro *tt2 = new Tiro(0,59,14);
+int main () {
+  Corpo *c1 = new Corpo(15);
+  Corpo *c2 = new Corpo(45);
+  Tiro *tt1 = new Tiro(0,15,15,1);
+  Tiro *tt2 = new Tiro(0,45,15,1);
   unsigned int turn = 0;
-  int mTargetCallback = 1;
+  int mFloorHited = 0;
 
   ListaDeCorpos *lc = new ListaDeCorpos();
   ListaDeTiros *lt = new ListaDeTiros();
@@ -70,54 +68,57 @@ int main ()
     t0 = t1;
     t1 = get_now_ms();
     deltaT = t1-t0;
-    // Atualiza modelo
-    f->update(deltaT);
 
     // Atualiza tela
-    tela->update(t1-T, tiro);    
+    tela->update(t1-T, tiro, turn);    
     // Lê o teclado
     char c = teclado->getchar();
+
     if (c == 'w' && !tiro) {
-      f->movimento('w', turn, TARGET_NOT_HITED);
+      f->movimento('w', turn);
       //asample->set_position(0);
     }
     if (c == 's' && !tiro) {
-      f->movimento('s', turn, TARGET_NOT_HITED);
+      f->movimento('s', turn);
       //asample->set_position(0);
     }
 
-    if(c=='m' && !tiro){
-      f->movimento('m', turn,TARGET_NOT_HITED);         //Deixei funcionando a barra de vida, a efeito de demosntração, para você ver o resultado.
+    if (c == '+' && !tiro) {
+      f->alteraForca('+', turn);
     }
 
-    // if(c=='m' && mTargetCallback == TARGET_HITED){       LUANA = Essa função será utilizada para diminui a barra de vida 
-    //   f->movimento('m', turn, TARGET_HITED);             do jogador. Será necessário que aperte a tecla m (QUE DEVERÁ SER A TECLA
-    // }                                                     DE ESPAÇO) e além disso, você deve dizer par a função se o jogador acertou o alvo. Essa variável que eu chamei de mTargetCallback, passa pra ela se foi atingido o alvo o não!
+    if (c== '-' && !tiro) {
+	  f->alteraForca('-', turn);
+    }
+
     if (c=='q') {
       break;
     }
 
-    if (c=='t' || tiro) {
-      f->tiro(deltaT, turn);
+    if (c==' ' || tiro) {
+      f->tiro(deltaT, turn, &mFloorHited);
       tiro = 1;
-      contTiro++;
-      if (contTiro >= 30) {
-        tiro = 0;
-        contTiro = 0;
-        turn = !turn;
-      T = get_now_ms();
-      t1 = T;
-    }
+
+      if (mFloorHited) {
+		tiro = 0;
+		mFloorHited = 0;
+	    turn = !turn;
+	    T = get_now_ms();
+	    t1 = T;
+	  }
+
     }
 
     // Condicao de parada
     if (!tiro) {
-      if ((t1-T) >10000) {
+      if ((t1-T) > 15000) {
+      	std::this_thread::sleep_for (std::chrono::milliseconds(500));
         turn = !turn;
         T = get_now_ms();
         t1 = T;
       }
     }
+
     std::this_thread::sleep_for (std::chrono::milliseconds(100));
     i++;
   }
