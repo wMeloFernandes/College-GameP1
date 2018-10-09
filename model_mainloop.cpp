@@ -2,6 +2,12 @@
 #include <chrono>
 #include <thread>
 #include <vector>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+
 
 #include "oo_model.hpp"
 
@@ -11,6 +17,7 @@ uint64_t get_now_ms() {
 }
 
 int main () {
+	char input_buffer[50];
   Corpo *c1 = new Corpo(15);
   Corpo *c2 = new Corpo(45);
   Tiro *tt1 = new Tiro(0,15,15,1);
@@ -72,7 +79,8 @@ int main () {
     // Atualiza tela
     tela->update(t1-T, tiro, turn);    
     // Lê o teclado
-    char c = teclado->getchar();
+		int connection_fd =  teclado->getConnection();
+    char c = recv(connection_fd, input_buffer, 5, 0);
 
     if (c == 'w' && !tiro) {
       f->movimento('w', turn);
