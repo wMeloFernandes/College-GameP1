@@ -4,9 +4,15 @@
 #define TARGET_HITED 1
 #define TARGET_NOT_HITED 0
 
-#include "portaudio.h"
+//#include "portaudio.h"
 #include <vector>
 #include <thread>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+
 
 namespace Audio {
 
@@ -148,6 +154,7 @@ class Teclado {
     void stop();
     void init();
     char getchar();
+		char getConnection();
 };
 
 #endif
