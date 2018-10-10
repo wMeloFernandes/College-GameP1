@@ -13,7 +13,6 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
-
 #include "oo_model.hpp"
 
 #include <ncurses.h>
@@ -586,34 +585,35 @@ char Teclado::getchar() {
   return c;
 }
 
-int Teclado::getConnection(){
-	
-	int socket_fd, connection_fd;
-  struct sockaddr_in myself, client;
-  socklen_t client_size = (socklen_t)sizeof(client);
-  char input_buffer[50];
+Socket::Socket() {
+}
 
-  socket_fd = socket(AF_INET, SOCK_STREAM, 0);
-  printf("Socket criado\n");
+Socket::~Socket() {
+}
+
+void Socket::initConnection() {
+	struct sockaddr_in myself, client;
+  socklen_t client_size = (socklen_t)sizeof(client);
+
+  this->socket_fd = socket(AF_INET, SOCK_STREAM, 0);
 
   myself.sin_family = AF_INET;
   myself.sin_port = htons(3001);
-  inet_aton("10.0.0.108", &(myself.sin_addr));
-
-  printf("Tentando abrir porta 3001\n");
+  inet_aton("127.0.0.1", &(myself.sin_addr));
   
-	if (bind(socket_fd, (struct sockaddr*)&myself, sizeof(myself)) != 0) {
-    printf("Problemas ao abrir porta\n");
-    return 0;
-  }
-  printf("Abri porta 3001!\n");
+	bind(this->socket_fd, (struct sockaddr*)&myself, sizeof(myself))
 
-  listen(socket_fd, 2);
-  printf("Estou ouvindo na porta 3001!\n");
+  listen(this->socket_fd, 2);
 	
-	printf("Vou travar ate receber alguma coisa\n");
-  connection_fd = accept(socket_fd, (struct sockaddr*)&client, &client_size);
+  this->connection_fd = accept(this->socket_fd, (struct sockaddr*)&client, &client_size);
 
-	return connection_fd;
 }
 
+char Socket:receiveChar() {
+		char c = recv(this->connection_fd, this->input_buffer, 1, 0);
+		return c;
+}
+
+void Socket:close() {
+		close(this->socket_fd);
+}

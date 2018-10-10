@@ -154,7 +154,20 @@ class Teclado {
     void stop();
     void init();
     char getchar();
-		char getConnection();
 };
 
+
+class Socket {
+	private:
+		int socket_fd, connection_fd;
+		char input_buffer[50];
+
+	public:
+		Socket();
+		~Socket();
+		void initConnection();
+		char receiveChar();
+		void close();
+    
+}
 #endif

@@ -24,6 +24,7 @@ int main () {
   Tiro *tt2 = new Tiro(0,45,15,1);
   unsigned int turn = 0;
   int mFloorHited = 0;
+	char c;
 
   ListaDeCorpos *lc = new ListaDeCorpos();
   ListaDeTiros *lt = new ListaDeTiros();
@@ -40,6 +41,9 @@ int main () {
   Teclado *teclado = new Teclado();
   teclado->init();
 
+	Socket *socket = new Socket();
+	socket->initConnection();
+
   uint64_t t0;
   uint64_t t1;
   uint64_t deltaT;
@@ -48,6 +52,15 @@ int main () {
   uint64_t contTiro;
   
   int i = 0;
+
+  int socket_fd;
+  struct sockaddr_in target;
+
+  socket_fd = socket(AF_INET, SOCK_STREAM, 0);
+  target.sin_family = AF_INET;
+  target.sin_port = htons(3001);
+  inet_aton("127.0.0.1", &(target.sin_addr));
+  connect(socket_fd, (struct sockaddr*)&target, sizeof(target))
 
   //Audio::Sample *asample;
   //asample = new Audio::Sample();
@@ -77,10 +90,12 @@ int main () {
     deltaT = t1-t0;
 
     // Atualiza tela
-    tela->update(t1-T, tiro, turn);    
+    tela->update(t1-T, tiro, turn);
+		teclado->getConnection();    
     // Lê o teclado
-		int connection_fd =  teclado->getConnection();
-    char c = recv(connection_fd, input_buffer, 5, 0);
+		send(socket_fd, "PING", 5, 0);
+
+		c = socket->receiveChar();
 
     if (c == 'w' && !tiro) {
       f->movimento('w', turn);
@@ -133,5 +148,7 @@ int main () {
   //player->stop();
   tela->stop();
   teclado->stop();
+	socket->close();
+	close(socket_fd);
   return 0;
 }
