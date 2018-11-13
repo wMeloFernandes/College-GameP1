@@ -297,50 +297,47 @@ Fisica::Fisica(ListaDeCorpos *ldc, ListaDeTiros *ldt) {
   this->lista_tiros = ldt;
 }
 
-void Fisica::alteraForca (char option, unsigned int turn) {
+void Fisica::alteraForca (char option, unsigned int turn,int id) {
   std::vector<Tiro *> *t = this->lista_tiros->get_tiros();
   if (option =='+') {
-    if((*t)[turn]->get_forca() < 10) (*t)[turn]->setUpForca();
+    if((*t)[id]->get_forca() < 10) (*t)[id]->setUpForca();
   }
   else if (option == '-') {
-    if ((*t)[turn]->get_forca() > 1) (*t)[turn]->setDownForca();
+    if ((*t)[id]->get_forca() > 1) (*t)[id]->setDownForca();
   }
 }
 
 
-void Fisica::movimento(char option, unsigned int turn) {
+void Fisica::movimento(char option, unsigned int turn,int id) {
   // Atualiza parametros dos corpos!
   std::vector<Corpo *> *c = this->lista_corpos->get_corpos();
   std::vector<Tiro *> *t = this->lista_tiros->get_tiros(); 
   int new_pos;
   int new_life;
-  new_pos = ((*c)[turn]->get_posicao());
-  new_life = ((*c)[turn]->getLife());
+  new_pos = ((*c)[id]->get_posicao());
+  new_life = ((*c)[id]->getLife());
   if (option=='w') {
     if (new_pos<59) {
-      if((turn==0 && new_pos<30) || turn ==1){
-        ++new_pos;
-      }   
+      ++new_pos;   
     }
   } 
   else if (option=='s') {
     if (new_pos>0) {
-      if((turn==1 && new_pos>32) || turn==0)
       --new_pos;
     }
   }
 
-  (*c)[turn]->updateLife(new_life);
-  (*c)[turn]->update(new_pos);
-  (*t)[turn]->update(0, new_pos, 15, ((*t)[turn]->get_forca()));    
+  (*c)[id]->updateLife(new_life);
+  (*c)[id]->update(new_pos);
+  (*t)[id]->update(0, new_pos, 15, ((*t)[id]->get_forca()));    
 }
 
-void Fisica::tiro(float deltaT, unsigned int turn, int *mFloorHited) {
+void Fisica::tiro(float deltaT, unsigned int turn, int *mFloorHited, int id) {
   // Atualiza parametros dos corpos!
   std::vector<Tiro *> *t = this->lista_tiros->get_tiros(); 
   std::vector<Corpo *> *c = this->lista_corpos->get_corpos(); 
 
-  float new_vel = (*t)[turn]->get_velocidade() + (float)deltaT * (-10.0)/1000;
+  float new_vel = (*t)[id]->get_velocidade() + (float)deltaT * (-10.0)/1000;
   float new_pos_hor;
   if (!turn) new_pos_hor = (*t)[turn]->get_posicaoHorizontal() + 0.2*(*t)[turn]->get_forca();
   else new_pos_hor = (*t)[turn]->get_posicaoHorizontal() - 0.2*(*t)[turn]->get_forca();
@@ -444,89 +441,118 @@ void Tela::update(unsigned int t, unsigned int tiro, unsigned turn) {
       echochar('*');  /* Prints character, advances a position */
      }
     // Atualiza corpos antigos
-    (*tiros_old)[k]->update((*tiros)[k]->get_velocidade(), (*tiros)[k]->get_posicaoHorizontal(), (*tiros)[k]->get_posicaoVertical(), (*tiros)[k]->get_forca());
+     (*tiros_old)[k]->update((*tiros)[k]->get_velocidade(), (*tiros)[k]->get_posicaoHorizontal(), (*tiros)[k]->get_posicaoVertical(), (*tiros)[k]->get_forca());
   }
 
-    //Position Player 1
-  char player1[] = "Player 1 LIFE";
-  move(2,8);
-  for(int i=0;i<strlen(player1);i++){
-    echochar(player1[i]);
-  }
 
-  move(3,13);
-  for(int i=0;i<=(*corpos)[0]->getLife();i++){
-    echochar(' ');  
-  }
-  move(3,13);
-  for(int i=0;i<(*corpos)[0]->getLife();i++){
-    echochar('-');  
-  }
+  
 
-  for(int i=1; i<=15;i++){
-    move(14 - i, 5);
-    echochar(' ');  
-  }
-  for(int i=1; i<=(*tiros)[0]->get_forca();i++){
-    move(14 - i, 5);
-    echochar('|');  
-  }
+  for (int k=0; k<corpos_old->size(); k++) {
+    if(corpos_old->size()>0){
+      if(k==0){
+        //Position Player 1
+        char player1[] = "Player 1";
+        move(2,10);
+        for(int i=0;i<strlen(player1);i++){
+          echochar(player1[i]);
+        }
+         move(3,13);
+        for(int i=0;i<=(*corpos)[0]->getLife();i++){
+          echochar(' ');  
+        }
+        move(3,13);
+        for(int i=0;i<(*corpos)[0]->getLife();i++){
+        echochar('-');  
+        }
+        for(int i=1; i<=15;i++){
+          move(14 - i, 5);
+          echochar(' ');  
+        }
+        for(int i=1; i<=(*tiros)[0]->get_forca();i++){
+          move(14 - i, 5);
+          echochar('|');  
+        }
 
-  //Position Player 2
-  char player2[] = "Player 2 LIFE";
-  move(2,38);
-  for(int i=0; i<strlen(player2);i++){
-    echochar(player2[i]);    
-  }
+      }
+      if(k==1){
+       //Position Player 2
+        char player2[] = "Player 2";
+        move(2,38);
+        for(int i=0; i<strlen(player2);i++){
+          echochar(player2[i]);    
+        }
+         move(3,43);
+          for(int i=0;i<=(*corpos)[1]->getLife();i++){
+            echochar(' ');  
+          }
+        move(3,43);
+          for(int i=0;i<(*corpos)[1]->getLife();i++){
+            echochar('-');  
+          }
+        for(int i=1; i<=15;i++){
+          move(14 - i, 55);
+          echochar(' ');  
+        }
 
-  move(3,43);
-  for(int i=0;i<=(*corpos)[1]->getLife();i++){
-    echochar(' ');  
-  }
-  move(3,43);
-  for(int i=0;i<(*corpos)[1]->getLife();i++){
-    echochar('-');  
-  }
+        for(int i=1; i<=(*tiros)[1]->get_forca();i++){
+          move(14 - i, 55);
+          echochar('|');  
+        }
+      }
+      if(k==2){
+        //Position Player 3
+        char player1[] = "Player 3";
+        move(2,24);
+        for(int i=0;i<strlen(player1);i++){
+          echochar(player1[i]);
+        }
+        move(3,29);
+        for(int i=0;i<=(*corpos)[2]->getLife();i++){
+          echochar(' ');  
+        }
+        move(3,29);
+        for(int i=0;i<(*corpos)[2]->getLife();i++){
+        echochar('-');  
+        }
+          for(int i=1; i<=15;i++){
+            move(14 - i, 8);
+            echochar(' ');  
+          }
+          for(int i=1; i<=(*tiros)[2]->get_forca();i++){
+            move(14 - i, 8);
+            echochar('|');  
+          }
 
-  for(int i=1; i<=15;i++){
-    move(14 - i, 55);
-    echochar(' ');  
-  }
+      }
+      if(k==3){
+        //Position Player 4
+        char player2[] = "Player 4";
+        move(2,50);
+        for(int i=0; i<strlen(player2);i++){
+          echochar(player2[i]);    
+        }
+        move(3,55);
+          for(int i=0;i<=(*corpos)[3]->getLife();i++){
+            echochar(' ');  
+          }
+        move(3,55);
+          for(int i=0;i<(*corpos)[3]->getLife();i++){
+            echochar('-');  
+          }
 
-  for(int i=1; i<=(*tiros)[1]->get_forca();i++){
-    move(14 - i, 55);
-    echochar('|');  
-  }
+        for(int i=1; i<=15;i++){
+          move(14 - i, 58);
+          echochar(' ');  
+        }
 
-  int timer = t/1000;
-  char timerChar;
-
-  char timerText[] = "Timer:";
-  int desloc = 0;
-  // Timer Player 1
-
-  if (turn == 0) desloc = 10;
-  else desloc = 40;
-
-  for (int k=0; k < 60; k++) {
-      move(1, k);   /* Move cursor to position */
-      echochar(' ');  /* Prints character, advances a position */
-  }
-  move(1,desloc);
-  for(int i=0; i<strlen(timerText);i++){
-    echochar(timerText[i]);
-    desloc++;    
-  }
-
-  if (!tiro) {
-    for (int k=desloc+1; timer > 0; k--) {
-      timerChar = timer%10 + '0';
-      timer = timer / 10;
-      move(1, k);   /* Move cursor to position */
-      echochar(timerChar);  /* Prints character, advances a position */
+        for(int i=1; i<=(*tiros)[3]->get_forca();i++){
+          move(14 - i, 58);
+          echochar('|');  
+        }
+      }
     }
   }
-
+  
   // Atualiza tela
   refresh();
 }
