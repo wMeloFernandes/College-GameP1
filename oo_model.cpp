@@ -102,8 +102,7 @@ int mix_and_play (const void *inputBuffer, void *outputBuffer,
         buffer[i] = data[pos];
       else
         buffer[i] = 0;
-      i++;
-      pos+=2;
+      pos++;
     }
     s->set_position(pos);
   }
@@ -137,7 +136,7 @@ void Player::init() {
                          NULL,      /* No input. */
                          &outputParameters,
                          44100,
-                         64,       /* Frames per buffer. */
+                         1024,       /* Frames per buffer. */
                          paClipOff, /* We won't output out of range samples so don't bother clipping them. */
                          mix_and_play,
                          this );
@@ -267,7 +266,7 @@ void Corpo::setLife(){
 }
 
 void Corpo::less_life() {
-  this->life = this->life -1;
+  this->life = this-> life -1;
 }
 
 ListaDeCorpos::ListaDeCorpos() {
@@ -327,9 +326,9 @@ void Fisica::movimento(char option, unsigned int turn,int id) {
     }
   }
 
-  (*c)[id]->updateLife(new_life);
-  (*c)[id]->update(new_pos);
-  (*t)[id]->update(0, new_pos, 15, ((*t)[id]->get_forca()));    
+  (*c)[turn]->updateLife(new_life);
+  (*c)[turn]->update(new_pos);
+  (*t)[turn]->update(15, new_pos, 15, ((*t)[turn]->get_forca()));    
 }
 
 void Fisica::tiro(float deltaT, unsigned int turn, int *mFloorHited, int id) {
@@ -337,32 +336,29 @@ void Fisica::tiro(float deltaT, unsigned int turn, int *mFloorHited, int id) {
   std::vector<Tiro *> *t = this->lista_tiros->get_tiros(); 
   std::vector<Corpo *> *c = this->lista_corpos->get_corpos(); 
 
+<<<<<<< HEAD
   float new_vel = (*t)[id]->get_velocidade() + (float)deltaT * (-10.0)/1000;
   float new_pos_hor;
   if (!turn) new_pos_hor = (*t)[turn]->get_posicaoHorizontal() + 0.2*(*t)[turn]->get_forca();
   else new_pos_hor = (*t)[turn]->get_posicaoHorizontal() - 0.2*(*t)[turn]->get_forca();
-  float new_pos_ver = (*t)[turn]->get_posicaoVertical() + (float)deltaT * new_vel/1000;
-
-  if (new_pos_ver >= 14 && new_pos_hor == (*c)[!turn]->get_posicao()) {
-    int new_life;
-    new_life = ((*c)[!turn]->getLife());
-
-    if (new_life>0) {
-      --new_life;
-    } 
-
-    (*c)[!turn]->updateLife(new_life);
-  }
-
-  if (new_pos_ver < 0) {
-      new_pos_ver *= -1;
-      new_vel *= -1;
-  }
+  float new_pos_ver = (*t)[turn]->get_posicaoVertical() - (float)deltaT * new_vel/1000;
 
   if (new_pos_ver >= 15) {
+
+  	if(new_pos_hor == (*c)[!turn]->get_posicao() || new_pos_hor == (*c)[!turn]->get_posicao()+1 || new_pos_hor == (*c)[!turn]->get_posicao()+2 || new_pos_hor == (*c)[!turn]->get_posicao()+3 || new_pos_hor == (*c)[!turn]->get_posicao()-1 || new_pos_hor == (*c)[!turn]->get_posicao()-2 || new_pos_hor == (*c)[!turn]->get_posicao()-3) {
+	    int new_life;
+	    new_life = ((*c)[!turn]->getLife());
+
+	    if (new_life>0) {
+	      --new_life;
+	    }
+
+	    (*c)[!turn]->updateLife(new_life);
+  	}
+
     new_pos_ver = 15;
     new_pos_hor = (*c)[turn]->get_posicao();
-    new_vel = 0;
+    new_vel = 15;
     *mFloorHited = 1;
   }
 
@@ -414,38 +410,40 @@ void Tela::update(unsigned int t, unsigned int tiro, unsigned turn) {
       echochar(' ');  /* Prints character, advances a position */
     }
   }
-
   // Desenha corpos na tela
-  std::vector<Corpo *> *corpos = this->lista_corpos->get_corpos();
-  std::vector<Tiro *> *tiros = this->lista_tiros->get_tiros();
-
+	std::vector<Corpo *> *corpos = this->lista_corpos->get_corpos();
+	std::vector<Tiro *> *tiros = this->lista_tiros->get_tiros();
 
   for (int k=0; k<corpos->size(); k++) {
-    j = (int) ((*corpos)[k]->get_posicao()) * \
-        (this->maxJ / this->maxY);
-     if(j>-20 && j<60){
-        move(15, j);   /* Move cursor to position */
-        echochar('*');  /* Prints character, advances a position */
-     }
-    // Atualiza corpos antigos
-    (*corpos_old)[k]->update((*corpos)[k]->get_posicao());
+  	if ((*corpos)[k]->getLife() > 0) {
+	    j = (int) ((*corpos)[k]->get_posicao()) * \
+	        (this->maxJ / this->maxY);
+	     if(j>-20 && j<60){
+	        move(15, j);   /* Move cursor to position */
+	        echochar('*');  /* Prints character, advances a position */
+	     }
+	    // Atualiza corpos antigos
+	    (*corpos_old)[k]->update((*corpos)[k]->get_posicao());
+	}
+
   }
 
   for (int k=0; k<tiros->size(); k++) {
-    i = (int) ((*tiros)[k]->get_posicaoVertical()) * \
-        (this->maxI / this->maxX);
-    j = (int) ((*tiros)[k]->get_posicaoHorizontal()) * \
-        (this->maxJ / this->maxY);
-     if(i>-20 && i<60 && j>-20 && j<60){
-      move(i, j);   /* Move cursor to position */
-      echochar('*');  /* Prints character, advances a position */
-     }
-    // Atualiza corpos antigos
-     (*tiros_old)[k]->update((*tiros)[k]->get_velocidade(), (*tiros)[k]->get_posicaoHorizontal(), (*tiros)[k]->get_posicaoVertical(), (*tiros)[k]->get_forca());
+
+  	if ((*corpos)[k]->getLife() > 0) {
+	    i = (int) ((*tiros)[k]->get_posicaoVertical()) * \
+	        (this->maxI / this->maxX);
+	    j = (int) ((*tiros)[k]->get_posicaoHorizontal()) * \
+	        (this->maxJ / this->maxY);
+	     if(i>-20 && i<60 && j>-20 && j<60){
+	      move(i, j);   /* Move cursor to position */
+	      echochar('*');  /* Prints character, advances a position */
+	     }
+	    // Atualiza corpos antigos
+	    (*tiros_old)[k]->update((*tiros)[k]->get_velocidade(), (*tiros)[k]->get_posicaoHorizontal(), (*tiros)[k]->get_posicaoVertical(), (*tiros)[k]->get_forca());
+  	}
   }
 
-
-  
 
   for (int k=0; k<corpos_old->size(); k++) {
     if(corpos_old->size()>0){

@@ -13,8 +13,8 @@ uint64_t get_now_ms() {
 int main () {
   Corpo *c1 = new Corpo(15);
   Corpo *c2 = new Corpo(45);
-  Tiro *tt1 = new Tiro(0,15,15,1);
-  Tiro *tt2 = new Tiro(0,45,15,1);
+  Tiro *tt1 = new Tiro(15,15,15,1);
+  Tiro *tt2 = new Tiro(15,45,15,1);
   unsigned int turn = 0;
   int mFloorHited = 0;
 
@@ -42,13 +42,14 @@ int main () {
   
   int i = 0;
 
-  //Audio::Sample *asample;
-  //asample = new Audio::Sample();
-  //asample->load("assets/blip.dat");
+  Audio::Sample *asample;
+  asample = new Audio::Sample();
+  asample->load("assets/blip.dat");
 
-  //Audio::Player *player;
-  //player = new Audio::Player();
-  //player->init();
+  Audio::Player *player;
+  player = new Audio::Player();
+  freopen("/dev/null", "w", stderr);
+  player->init();
 
   // Espera
   while (1) {
@@ -57,11 +58,10 @@ int main () {
     if (t1-t0 > 500) break;
   }
 
-  //player->play(asample);
+  player->play(asample);
   
   T = get_now_ms();
   t1 = T;
-  //player->play(asample);
 
   while (1) {
     // Atualiza timers
@@ -76,11 +76,13 @@ int main () {
 
     if (c == 'w' && !tiro) {
       f->movimento('w', turn);
-      //asample->set_position(0);
+      asample->set_position(0);
+      player->play(asample);
     }
     if (c == 's' && !tiro) {
       f->movimento('s', turn);
-      //asample->set_position(0);
+      asample->set_position(0);
+      player->play(asample);
     }
 
     if (c == '+' && !tiro) {

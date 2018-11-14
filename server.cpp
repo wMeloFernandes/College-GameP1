@@ -27,9 +27,6 @@ int positionDefaultTeam1 = 10;
 int positionDefaultTeam2 = 45;
 
 
-
-
-
 using namespace std::chrono;
 uint64_t get_now_ms() {
   return duration_cast<milliseconds>(steady_clock::now().time_since_epoch()).count();
@@ -148,13 +145,13 @@ int main () {
   
   int i = 0;
 
-  //Audio::Sample *asample;
-  //asample = new Audio::Sample();
-  //asample->load("assets/blip.dat");
+  Audio::Sample *asample;
+  asample = new Audio::Sample();
+  asample->load("assets/blip.dat");
 
-  //Audio::Player *player;
-  //player = new Audio::Player();
-  //player->init();
+  Audio::Player *player;
+  player = new Audio::Player();
+  player->init();
 
   // Espera
   while (1) {
@@ -163,13 +160,10 @@ int main () {
     if (t1-t0 > 500) break;
   }
 
-  //player->play(asample);
+  player->play(asample);
   
   T = get_now_ms();
   t1 = T;
-  //player->play(asample);
-
-
 
   while (1) {
 
@@ -183,11 +177,11 @@ int main () {
       if(numberUsersOnline%2==0){
         positionDefaultTeam2=positionDefaultTeam2+3;
       lc->add_corpo(new Corpo(positionDefaultTeam2));
-      lt->add_tiro(new Tiro(0,positionDefaultTeam2,15,1));
+      lt->add_tiro(new Tiro(15,positionDefaultTeam2,15,1));
       }else{
         positionDefaultTeam1=positionDefaultTeam1+3;
       lc->add_corpo(new Corpo(positionDefaultTeam1));
-      lt->add_tiro(new Tiro(0,positionDefaultTeam1,15,1));  
+      lt->add_tiro(new Tiro(15,positionDefaultTeam1,15,1));  
       }
       oldUserNumberUsersOnline++;
       
@@ -221,19 +215,26 @@ int main () {
 
           if (input_buffer[0] == 'w' && !tiro) {
             f->movimento('w', turn,user_iterator);
+            asample->set_position(0);
+            player->play(asample);
           }
           if (input_buffer[0] == 's' && !tiro) {
             f->movimento('s', turn,user_iterator);
-            //asample->set_position(0);
+            asample->set_position(0);
+            player->play(asample);
            }
 
           if (input_buffer[0] == '+' && !tiro) {
            f->alteraForca('+', turn,user_iterator);
+           asample->set_position(0);
+            player->play(asample);
           }
 
-        if (input_buffer[0] == '-' && !tiro) {
-         f->alteraForca('-', turn,user_iterator);
-        }
+          if (input_buffer[0] == '-' && !tiro) {
+           f->alteraForca('-', turn,user_iterator);
+           asample->set_position(0);
+           player->play(asample);
+          }
 
         if (input_buffer[0] =='q') {
         for (user_iterator=0; user_iterator<MAX_CONEXOES; user_iterator++)
