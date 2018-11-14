@@ -8,8 +8,6 @@
 #include <pthread.h>
 #include <chrono>
 
-
-
 #include "oo_model.hpp"
 
 using namespace std::chrono;
@@ -26,11 +24,10 @@ void *receber_respostas(void *parametros) {
   int msg_num;
   msg_num = 0;
   while(1) {
-  msg_len = recv(socket_fd, reply, 5, MSG_DONTWAIT);
-  if (msg_len > 0) {
-    //printf("[%d][%d] RECEBI:\n%s\n", msg_num, msg_len, reply);
-    msg_num++;
-  }
+    msg_len = recv(socket_fd, reply, 5, MSG_DONTWAIT);
+    if (msg_len > 0) {
+      msg_num++;
+    }
   }
 }
 
@@ -40,11 +37,6 @@ int main() {
 
   socket_fd = socket(AF_INET, SOCK_STREAM, 0);
 
-  //Corpo *c1 = new Corpo(15);
-  //Corpo *c2 = new Corpo(45);
-  //Tiro *tt1 = new Tiro(0,15,15,1);
-  //Tiro *tt2 = new Tiro(0,45,15,1);
-  unsigned int turn = 0;
   int mFloorHited = 0;
 
   ListaDeCorpos *lc = new ListaDeCorpos();
@@ -58,7 +50,7 @@ int main() {
   Teclado *teclado = new Teclado();
   teclado->init();
 
- uint64_t t0;
+  uint64_t t0;
   uint64_t t1;
   uint64_t deltaT;
   uint64_t T;
@@ -73,17 +65,15 @@ int main() {
     if (t1-t0 > 500) break;
   }
 
-T = get_now_ms();
+  T = get_now_ms();
   t1 = T;
   target.sin_family = AF_INET;
   target.sin_port = htons(3001);
   inet_aton("127.0.0.1", &(target.sin_addr));
-  //printf("Tentando conectar\n");
   if (connect(socket_fd, (struct sockaddr*)&target, sizeof(target)) != 0) {
     printf("Problemas na conexao\n");
     return 0;
   }
-  //printf("Conectei ao servidor\n");
 
   pthread_create(&receiver, NULL, receber_respostas, NULL);
 

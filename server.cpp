@@ -26,7 +26,6 @@ int numberUsersOnline=0;
 int positionDefaultTeam1 = 10;
 int positionDefaultTeam2 = 45;
 
-
 using namespace std::chrono;
 uint64_t get_now_ms() {
   return duration_cast<milliseconds>(steady_clock::now().time_since_epoch()).count();
@@ -78,18 +77,8 @@ int main () {
   char output_buffer[60];
   char input_buffer[50];
 
-
   lc = new ListaDeCorpos();
   lt = new ListaDeTiros();
-
-  //Corpo *c1 = new Corpo(15);
-  //Corpo *c2 = new Corpo(45);
-  //Tiro *tt1 = new Tiro(0,15,15,1);
-  //Tiro *tt2 = new Tiro(0,45,15,1);
-  // lc->add_corpo(c1);
-  //lc->add_corpo(c2);
-  //lt->add_tiro(tt1);
-  //lt->add_tiro(tt2);
 
   /* Inicializando variaveis */
   client_size = (socklen_t)sizeof(client);
@@ -109,24 +98,12 @@ int main () {
     printf("Problemas ao abrir porta\n");
     return 0;
   }
-  //printf("Abri porta 3001!\n");
   listen(socket_fd, 2);
-  //printf("Estou ouvindo na porta 3001!\n");
 
   /* Dispara thread para ouvir conexoes */
   pthread_create(&esperar_conexoes, NULL, wait_connections, NULL);
 
-  //Corpo *c1 = new Corpo(15);
-  //Corpo *c2 = new Corpo(45);
-  //Tiro *tt1 = new Tiro(0,15,15,1);
-  //Tiro *tt2 = new Tiro(0,45,15,1);
-  unsigned int turn = 0;
   int mFloorHited = 0;
-
-  //lc->add_corpo(c1);
-  //lc->add_corpo(c2);
-  //lt->add_tiro(tt1);
- // lt->add_tiro(tt2);
 
   Fisica *f = new Fisica(lc, lt);
 
@@ -151,6 +128,7 @@ int main () {
 
   Audio::Player *player;
   player = new Audio::Player();
+  freopen("/dev/null", "w", stderr);
   player->init();
 
   // Espera
@@ -174,120 +152,107 @@ int main () {
 
     if(numberUsersOnline>0){
       if(oldUserNumberUsersOnline<numberUsersOnline){
-      if(numberUsersOnline%2==0){
-        positionDefaultTeam2=positionDefaultTeam2+3;
-      lc->add_corpo(new Corpo(positionDefaultTeam2));
-      lt->add_tiro(new Tiro(15,positionDefaultTeam2,15,1));
-      }else{
-        positionDefaultTeam1=positionDefaultTeam1+3;
-      lc->add_corpo(new Corpo(positionDefaultTeam1));
-      lt->add_tiro(new Tiro(15,positionDefaultTeam1,15,1));  
-      }
-      oldUserNumberUsersOnline++;
-      
-      tela = new Tela(lc, lt, 20, 20, 20, 20);
-      tela->init();
-    }else{
-    // Atualiza tela
-      tela->update(t1-T, tiro, turn);
-    }
+        if(numberUsersOnline%2==0){
+          positionDefaultTeam2=positionDefaultTeam2+3;
+          lc->add_corpo(new Corpo(positionDefaultTeam2));
+          lt->add_tiro(new Tiro(15,positionDefaultTeam2,15,1));
+        }
+        else{
+          positionDefaultTeam1=positionDefaultTeam1+3;
+          lc->add_corpo(new Corpo(positionDefaultTeam1));
+          lt->add_tiro(new Tiro(15,positionDefaultTeam1,15,1));  
+        }
 
-    if (input_buffer[0] == ' ' || tiro) {
-         f->tiro(deltaT, turn, &mFloorHited,0);
+        oldUserNumberUsersOnline++;
+        
+        tela = new Tela(lc, lt, 20, 20, 20, 20);
+        tela->init();
+      }
+      else{
+      // Atualiza tela
+        tela->update(t1-T, tiro);
+      }
+
+      if (input_buffer[0] == ' ' || tiro) {
+         f->tiro(deltaT, &mFloorHited,0);
          tiro = 1;
 
          if (mFloorHited) {
-         tiro = 0;
-         mFloorHited = 0;
-         turn = !turn;
-         T = get_now_ms();
-          t1 = T;
-        }
+           tiro = 0;
+           mFloorHited = 0;
+           T = get_now_ms();
+           t1 = T;
+         }
 
-        }
+      }
 
-        for (user_iterator=0; user_iterator<MAX_CONEXOES; user_iterator++) {
-      if (conexao_usada[user_iterator] == 1) {
-        msglen = recv(connection_fd[user_iterator], input_buffer, 50, MSG_DONTWAIT);
-        if (msglen > 0) {
-          //printf("Recebi mensagem de %d\n", user_iterator);
-          if ( strcmp(input_buffer, "END") == 0) running=0;
+      for (user_iterator=0; user_iterator<MAX_CONEXOES; user_iterator++) {
+        if (conexao_usada[user_iterator] == 1) {
+          msglen = recv(connection_fd[user_iterator], input_buffer, 50, MSG_DONTWAIT);
+          if (msglen > 0) {
+            //printf("Recebi mensagem de %d\n", user_iterator);
+            if (strcmp(input_buffer, "END") == 0) running=0;
 
-          if (input_buffer[0] == 'w' && !tiro) {
-            f->movimento('w', turn,user_iterator);
-            asample->set_position(0);
-            player->play(asample);
+            if (input_buffer[0] == 'w' && !tiro) {
+              f->movimento('w', user_iterator);
+              asample->set_position(0);
+              player->play(asample);
+            }
+            if (input_buffer[0] == 's' && !tiro) {
+              f->movimento('s', user_iterator);
+              asample->set_position(0);
+              player->play(asample);
+             }
+
+            if (input_buffer[0] == '+' && !tiro) {
+             f->alteraForca('+', user_iterator);
+             asample->set_position(0);
+              player->play(asample);
+            }
+
+            if (input_buffer[0] == '-' && !tiro) {
+             f->alteraForca('-', user_iterator);
+             asample->set_position(0);
+             player->play(asample);
+            }
+
+            if (input_buffer[0] =='q') {
+              for (user_iterator=0; user_iterator<MAX_CONEXOES; user_iterator++)
+                remover_conexao(user_iterator);
+              pthread_join(esperar_conexoes, NULL);
+              break;
+            }
+
+            if (input_buffer[0] == ' ' || tiro) {
+               f->tiro(deltaT, &mFloorHited,user_iterator);
+               tiro = 1;
+
+               if (mFloorHited) {
+                 tiro = 0;
+                 mFloorHited = 0;
+                 T = get_now_ms();
+                t1 = T;
+                }
+            }
           }
-          if (input_buffer[0] == 's' && !tiro) {
-            f->movimento('s', turn,user_iterator);
-            asample->set_position(0);
-            player->play(asample);
-           }
-
-          if (input_buffer[0] == '+' && !tiro) {
-           f->alteraForca('+', turn,user_iterator);
-           asample->set_position(0);
-            player->play(asample);
-          }
-
-          if (input_buffer[0] == '-' && !tiro) {
-           f->alteraForca('-', turn,user_iterator);
-           asample->set_position(0);
-           player->play(asample);
-          }
-
-        if (input_buffer[0] =='q') {
-        for (user_iterator=0; user_iterator<MAX_CONEXOES; user_iterator++)
-          remover_conexao(user_iterator);
-        pthread_join(esperar_conexoes, NULL);
-        break;
-        }
-
-        if (input_buffer[0] == ' ' || tiro) {
-         f->tiro(deltaT, turn, &mFloorHited,user_iterator);
-         tiro = 1;
-
-         if (mFloorHited) {
-         tiro = 0;
-         mFloorHited = 0;
-         turn = !turn;
-         T = get_now_ms();
-          t1 = T;
-        }
-
-        }
-          // for (int ret=0; ret<MAX_CONEXOES; ret++) {
-          //   if (conexao_usada[ret] == 1) {
-          //     //printf("Avisando user %d\n", ret);
-          //     if (send(connection_fd[ret], input_buffer, 50, MSG_NOSIGNAL) == -1) {
-          //      /* Usuario desconectou!?? */
-          //       //printf("Usuario %d desconectou!\n", ret);
-          //       //remover_conexao(ret);
-          //     }
-          //   }
-          // }
         }
       }
-    }
 
-    
-
-    // Condicao de parada
-    if (!tiro) {
-      if ((t1-T) > 15000) {
-        std::this_thread::sleep_for (std::chrono::milliseconds(500));
-        turn = !turn;
-        T = get_now_ms();
-        t1 = T;
+      // Condicao de parada
+      if (!tiro) {
+        if ((t1-T) > 15000) {
+          std::this_thread::sleep_for (std::chrono::milliseconds(500));
+          T = get_now_ms();
+          t1 = T;
+        }
       }
-    }
-  
+
     }
     
     std::this_thread::sleep_for (std::chrono::milliseconds(100));
     i++;
   }
-  //player->stop();
+  player->stop();
   tela->stop();
   teclado->stop();
   return 0;

@@ -113,9 +113,9 @@ class Fisica {
 
   public:
     Fisica(ListaDeCorpos *ldc, ListaDeTiros *ldt);
-    void movimento(char option, unsigned int turn, int id);
-    void tiro(float deltaT, unsigned int turn, int *mFloorHited,int id);
-    void alteraForca (char option, unsigned int turn, int id);
+    void movimento(char option, int id);
+    void tiro(float deltaT, int *mFloorHited,int id);
+    void alteraForca (char option, int id);
 };
 
 class Tela {
@@ -130,7 +130,7 @@ class Tela {
     ~Tela();
     void stop();
     void init();
-    void update(unsigned int t, unsigned int tiro, unsigned int turn);
+    void update(unsigned int t, unsigned int tiro);
 };
 
 void threadfun (char *keybuffer, int *control);

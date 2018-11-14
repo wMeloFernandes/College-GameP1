@@ -296,7 +296,7 @@ Fisica::Fisica(ListaDeCorpos *ldc, ListaDeTiros *ldt) {
   this->lista_tiros = ldt;
 }
 
-void Fisica::alteraForca (char option, unsigned int turn,int id) {
+void Fisica::alteraForca (char option, int id) {
   std::vector<Tiro *> *t = this->lista_tiros->get_tiros();
   if (option =='+') {
     if((*t)[id]->get_forca() < 10) (*t)[id]->setUpForca();
@@ -307,7 +307,7 @@ void Fisica::alteraForca (char option, unsigned int turn,int id) {
 }
 
 
-void Fisica::movimento(char option, unsigned int turn,int id) {
+void Fisica::movimento(char option, int id) {
   // Atualiza parametros dos corpos!
   std::vector<Corpo *> *c = this->lista_corpos->get_corpos();
   std::vector<Tiro *> *t = this->lista_tiros->get_tiros(); 
@@ -315,6 +315,7 @@ void Fisica::movimento(char option, unsigned int turn,int id) {
   int new_life;
   new_pos = ((*c)[id]->get_posicao());
   new_life = ((*c)[id]->getLife());
+
   if (option=='w') {
     if (new_pos<59) {
       ++new_pos;   
@@ -326,43 +327,41 @@ void Fisica::movimento(char option, unsigned int turn,int id) {
     }
   }
 
-  (*c)[turn]->updateLife(new_life);
-  (*c)[turn]->update(new_pos);
-  (*t)[turn]->update(15, new_pos, 15, ((*t)[turn]->get_forca()));    
+  (*c)[id]->updateLife(new_life);
+  (*c)[id]->update(new_pos);
+  (*t)[id]->update(15, new_pos, 15, ((*t)[id]->get_forca()));    
 }
 
-void Fisica::tiro(float deltaT, unsigned int turn, int *mFloorHited, int id) {
+void Fisica::tiro(float deltaT, int *mFloorHited, int id) {
   // Atualiza parametros dos corpos!
   std::vector<Tiro *> *t = this->lista_tiros->get_tiros(); 
   std::vector<Corpo *> *c = this->lista_corpos->get_corpos(); 
 
-<<<<<<< HEAD
   float new_vel = (*t)[id]->get_velocidade() + (float)deltaT * (-10.0)/1000;
   float new_pos_hor;
-  if (!turn) new_pos_hor = (*t)[turn]->get_posicaoHorizontal() + 0.2*(*t)[turn]->get_forca();
-  else new_pos_hor = (*t)[turn]->get_posicaoHorizontal() - 0.2*(*t)[turn]->get_forca();
-  float new_pos_ver = (*t)[turn]->get_posicaoVertical() - (float)deltaT * new_vel/1000;
+  new_pos_hor = (*t)[id]->get_posicaoHorizontal() + 0.2*(*t)[id]->get_forca();
+  float new_pos_ver = (*t)[id]->get_posicaoVertical() - (float)deltaT * new_vel/1000;
 
   if (new_pos_ver >= 15) {
 
-  	if(new_pos_hor == (*c)[!turn]->get_posicao() || new_pos_hor == (*c)[!turn]->get_posicao()+1 || new_pos_hor == (*c)[!turn]->get_posicao()+2 || new_pos_hor == (*c)[!turn]->get_posicao()+3 || new_pos_hor == (*c)[!turn]->get_posicao()-1 || new_pos_hor == (*c)[!turn]->get_posicao()-2 || new_pos_hor == (*c)[!turn]->get_posicao()-3) {
+  	if(new_pos_hor == (*c)[id]->get_posicao() || new_pos_hor == (*c)[id]->get_posicao()+1 || new_pos_hor == (*c)[id]->get_posicao()+2 || new_pos_hor == (*c)[id]->get_posicao()+3 || new_pos_hor == (*c)[id]->get_posicao()-1 || new_pos_hor == (*c)[id]->get_posicao()-2 || new_pos_hor == (*c)[id]->get_posicao()-3) {
 	    int new_life;
-	    new_life = ((*c)[!turn]->getLife());
+	    new_life = ((*c)[id]->getLife());
 
 	    if (new_life>0) {
 	      --new_life;
 	    }
 
-	    (*c)[!turn]->updateLife(new_life);
+	    (*c)[id]->updateLife(new_life);
   	}
 
     new_pos_ver = 15;
-    new_pos_hor = (*c)[turn]->get_posicao();
+    new_pos_hor = (*c)[id]->get_posicao();
     new_vel = 15;
     *mFloorHited = 1;
   }
 
-  (*t)[turn]->update(new_vel, new_pos_hor, new_pos_ver, (*t)[turn]->get_forca());   
+  (*t)[id]->update(new_vel, new_pos_hor, new_pos_ver, (*t)[id]->get_forca());   
 }
 
 Tela::Tela(ListaDeCorpos *ldc, ListaDeTiros *ldt, int maxI, int maxJ, float maxX, float maxY) {
@@ -384,7 +383,7 @@ void Tela::init() {
   curs_set(0);           /* Do not display cursor */
 }
 
-void Tela::update(unsigned int t, unsigned int tiro, unsigned turn) {
+void Tela::update(unsigned int t, unsigned int tiro) {
   int i, j;
 
   std::vector<Corpo*> *corpos_old = this->lista_corpos_anterior->get_corpos();
@@ -472,6 +471,7 @@ void Tela::update(unsigned int t, unsigned int tiro, unsigned turn) {
         }
 
       }
+      
       if(k==1){
        //Position Player 2
         char player2[] = "Player 2";
@@ -512,15 +512,14 @@ void Tela::update(unsigned int t, unsigned int tiro, unsigned turn) {
         for(int i=0;i<(*corpos)[2]->getLife();i++){
         echochar('-');  
         }
-          for(int i=1; i<=15;i++){
-            move(14 - i, 8);
-            echochar(' ');  
-          }
-          for(int i=1; i<=(*tiros)[2]->get_forca();i++){
-            move(14 - i, 8);
-            echochar('|');  
-          }
-
+        for(int i=1; i<=15;i++){
+          move(14 - i, 8);
+          echochar(' ');  
+        }
+        for(int i=1; i<=(*tiros)[2]->get_forca();i++){
+          move(14 - i, 8);
+          echochar('|');  
+        }
       }
       if(k==3){
         //Position Player 4
@@ -530,13 +529,13 @@ void Tela::update(unsigned int t, unsigned int tiro, unsigned turn) {
           echochar(player2[i]);    
         }
         move(3,55);
-          for(int i=0;i<=(*corpos)[3]->getLife();i++){
-            echochar(' ');  
-          }
+        for(int i=0;i<=(*corpos)[3]->getLife();i++){
+          echochar(' ');  
+        }
         move(3,55);
-          for(int i=0;i<(*corpos)[3]->getLife();i++){
-            echochar('-');  
-          }
+        for(int i=0;i<(*corpos)[3]->getLife();i++){
+          echochar('-');  
+        }
 
         for(int i=1; i<=15;i++){
           move(14 - i, 58);
