@@ -1,9 +1,7 @@
 #ifndef OO_MODEL_HPP
 #define OO_MODEL_HPP
 
-#define TARGET_HITED 1
-#define TARGET_NOT_HITED 0
-
+#define MAX_CONEXOES 4
 #include "portaudio.h"
 #include <vector>
 #include <thread>
@@ -59,11 +57,9 @@ class Corpo {
   public:
   Corpo(float posicao);
   void update(float nova_posicao);
-  void updateLife(int life);
   float get_posicao();
+  void updateLife(int life);
   int getLife();
-  void setLife();
-  void less_life();
 };
 
 class ListaDeCorpos {
@@ -114,8 +110,8 @@ class Fisica {
   public:
     Fisica(ListaDeCorpos *ldc, ListaDeTiros *ldt);
     void movimento(char option, int id);
-    void tiro(float deltaT, int *mFloorHited,int id);
-    void alteraForca (char option, int id);
+    void tiro(float deltaT, int *mFloorHited, int id, int users);
+    void alteraForca(char option, int id);
 };
 
 class Tela {
@@ -149,5 +145,9 @@ class Teclado {
     void init();
     char getchar();
 };
+
+int adicionar_conexao(int new_connection_fd);
+int remover_conexao(int user);
+void *wait_connections(void *parameters);
 
 #endif

@@ -62,7 +62,6 @@ std::vector<float> Sample::get_data() {
   return this->data;
 }
 
-
 Player::Player() {
   this->playing = false;
   this->audio_sample = NULL;
@@ -79,7 +78,6 @@ Player::~Player() {
 Sample *Player::get_data() {
   return this->audio_sample;
 }
-
 
 int mix_and_play (const void *inputBuffer, void *outputBuffer,
                   unsigned long framesPerBuffer,
@@ -250,23 +248,12 @@ void Corpo::updateLife(int life){
   this->life = life;
 }
 
-
 float Corpo::get_posicao() {
   return this->posicao;
 }
 
 int Corpo::getLife(){
   return this->life;
-}
-
-void Corpo::setLife(){
-  int x = getLife();
-  x = x-1;
-  this->life = x;
-}
-
-void Corpo::less_life() {
-  this->life = this-> life -1;
 }
 
 ListaDeCorpos::ListaDeCorpos() {
@@ -312,47 +299,62 @@ void Fisica::movimento(char option, int id) {
   std::vector<Corpo *> *c = this->lista_corpos->get_corpos();
   std::vector<Tiro *> *t = this->lista_tiros->get_tiros(); 
   int new_pos;
-  int new_life;
   new_pos = ((*c)[id]->get_posicao());
-  new_life = ((*c)[id]->getLife());
 
   if (option=='w') {
-    if (new_pos<59) {
-      ++new_pos;   
-    }
+  	if (id == 1 || id == 3) {
+	    if (new_pos < 59) {
+	      ++new_pos;   
+	    }
+	}
+    else {
+	    if (new_pos < 29) {
+	    	++new_pos;
+	    }
+	}
+
   } 
   else if (option=='s') {
-    if (new_pos>0) {
-      --new_pos;
-    }
+    if (id == 0 || id == 2) {
+	    if (new_pos > 0) {
+	      --new_pos;   
+	    }
+	}
+    else {
+	    if (new_pos > 30) {
+	    	--new_pos;
+	    }
+	}
   }
 
-  (*c)[id]->updateLife(new_life);
   (*c)[id]->update(new_pos);
-  (*t)[id]->update(15, new_pos, 15, ((*t)[id]->get_forca()));    
+  (*t)[id]->update((*t)[id]->get_velocidade(), new_pos, 15, ((*t)[id]->get_forca()));    
 }
 
-void Fisica::tiro(float deltaT, int *mFloorHited, int id) {
+void Fisica::tiro(float deltaT, int *mFloorHited, int id, int users) {
   // Atualiza parametros dos corpos!
   std::vector<Tiro *> *t = this->lista_tiros->get_tiros(); 
   std::vector<Corpo *> *c = this->lista_corpos->get_corpos(); 
-
+  int i;
   float new_vel = (*t)[id]->get_velocidade() + (float)deltaT * (-10.0)/1000;
   float new_pos_hor;
-  new_pos_hor = (*t)[id]->get_posicaoHorizontal() + 0.2*(*t)[id]->get_forca();
+  if (id == 0 || id == 2) new_pos_hor = (*t)[id]->get_posicaoHorizontal() + 0.2*(*t)[id]->get_forca();
+  else new_pos_hor = (*t)[id]->get_posicaoHorizontal() - 0.2*(*t)[id]->get_forca();
   float new_pos_ver = (*t)[id]->get_posicaoVertical() - (float)deltaT * new_vel/1000;
 
   if (new_pos_ver >= 15) {
 
-  	if(new_pos_hor == (*c)[id]->get_posicao() || new_pos_hor == (*c)[id]->get_posicao()+1 || new_pos_hor == (*c)[id]->get_posicao()+2 || new_pos_hor == (*c)[id]->get_posicao()+3 || new_pos_hor == (*c)[id]->get_posicao()-1 || new_pos_hor == (*c)[id]->get_posicao()-2 || new_pos_hor == (*c)[id]->get_posicao()-3) {
-	    int new_life;
-	    new_life = ((*c)[id]->getLife());
+  	for (i = 0; i < users; i++) {
+  		if(new_pos_hor <= (*c)[i]->get_posicao()+2 && new_pos_hor >= (*c)[i]->get_posicao()-2) {
+	    	int new_life;
+	    	new_life = ((*c)[i]->getLife());
 
-	    if (new_life>0) {
-	      --new_life;
-	    }
+	    	if (new_life>0) {
+	      	--new_life;
+	    	}
 
-	    (*c)[id]->updateLife(new_life);
+		    (*c)[i]->updateLife(new_life);
+		}
   	}
 
     new_pos_ver = 15;
@@ -443,109 +445,145 @@ void Tela::update(unsigned int t, unsigned int tiro) {
   	}
   }
 
+  char gameOver[] = "Game Over";
 
   for (int k=0; k<corpos_old->size(); k++) {
     if(corpos_old->size()>0){
       if(k==0){
         //Position Player 1
         char player1[] = "Player 1";
-        move(2,10);
+        move(2,1);
         for(int i=0;i<strlen(player1);i++){
           echochar(player1[i]);
         }
-         move(3,13);
-        for(int i=0;i<=(*corpos)[0]->getLife();i++){
-          echochar(' ');  
-        }
-        move(3,13);
-        for(int i=0;i<(*corpos)[0]->getLife();i++){
-        echochar('-');  
-        }
-        for(int i=1; i<=15;i++){
-          move(14 - i, 5);
-          echochar(' ');  
-        }
-        for(int i=1; i<=(*tiros)[0]->get_forca();i++){
-          move(14 - i, 5);
-          echochar('|');  
-        }
+	    for(int i=1; i<=10;i++){
+	        move(14 - i, 2);
+	        echochar(' ');  
+	    }        
+        if ((*corpos)[0]->getLife() > 0) {
+	        move(3,4);
+	        for(int i=0;i<=3;i++){
+	          echochar(' ');  
+	        }
+	        move(3,4);
+	        for(int i=0;i<(*corpos)[0]->getLife();i++){
+	        echochar('-');  
+	        }
+	        for(int i=1; i<=(*tiros)[0]->get_forca();i++){
+	          move(14 - i, 2);
+	          echochar('|');  
+	        }
+	    }
+        else {
+       	 	move(3,1);
+        	for(int i=0; i<strlen(gameOver);i++){
+          		echochar(gameOver[i]);    
+        	}
+       	 }
 
       }
       
       if(k==1){
        //Position Player 2
         char player2[] = "Player 2";
-        move(2,38);
+        move(2,37);
         for(int i=0; i<strlen(player2);i++){
           echochar(player2[i]);    
         }
-         move(3,43);
-          for(int i=0;i<=(*corpos)[1]->getLife();i++){
-            echochar(' ');  
-          }
-        move(3,43);
-          for(int i=0;i<(*corpos)[1]->getLife();i++){
-            echochar('-');  
-          }
-        for(int i=1; i<=15;i++){
+        
+        for(int i=1; i<=10;i++){
           move(14 - i, 55);
           echochar(' ');  
         }
 
-        for(int i=1; i<=(*tiros)[1]->get_forca();i++){
-          move(14 - i, 55);
-          echochar('|');  
-        }
+        if ((*corpos)[1]->getLife() > 0) {
+	        move(3,40);
+	        for(int i=0;i<=3; i++){
+	          echochar(' ');  
+	        }
+	        move(3,40);
+	        for(int i=0;i<(*corpos)[1]->getLife();i++){
+	          echochar('-');  
+	        }
+
+	        for(int i=1; i<=(*tiros)[1]->get_forca();i++){
+	          move(14 - i, 55);
+	          echochar('|');  
+	        }
+	    }
+        else {
+       	 	move(3,37);
+        	for(int i=0; i<strlen(gameOver);i++){
+          		echochar(gameOver[i]);    
+        	}
+       	 }
       }
       if(k==2){
         //Position Player 3
         char player1[] = "Player 3";
-        move(2,24);
+        move(2,15);
         for(int i=0;i<strlen(player1);i++){
           echochar(player1[i]);
         }
-        move(3,29);
-        for(int i=0;i<=(*corpos)[2]->getLife();i++){
+        for(int i=1; i<=10;i++){
+          move(14 - i, 5);
           echochar(' ');  
         }
-        move(3,29);
-        for(int i=0;i<(*corpos)[2]->getLife();i++){
-        echochar('-');  
-        }
-        for(int i=1; i<=15;i++){
-          move(14 - i, 8);
-          echochar(' ');  
-        }
-        for(int i=1; i<=(*tiros)[2]->get_forca();i++){
-          move(14 - i, 8);
-          echochar('|');  
-        }
+
+        if ((*corpos)[2]->getLife() > 0) {
+        	move(3,18);
+	        for(int i=0;i<=3;i++){
+	          echochar(' ');  
+	        }
+	        move(3,18);
+	        for(int i=0;i<(*corpos)[2]->getLife();i++){
+	        echochar('-');  
+	        }
+
+	        for(int i=1; i<=(*tiros)[2]->get_forca();i++){
+	          move(14 - i, 5);
+	          echochar('|');  
+	        }
+	    }
+        else {
+       	 	move(3,15);
+        	for(int i=0; i<strlen(gameOver);i++){
+          		echochar(gameOver[i]);    
+        	}
+       	 }
       }
       if(k==3){
         //Position Player 4
         char player2[] = "Player 4";
-        move(2,50);
+        move(2,52);
         for(int i=0; i<strlen(player2);i++){
           echochar(player2[i]);    
         }
-        move(3,55);
-        for(int i=0;i<=(*corpos)[3]->getLife();i++){
-          echochar(' ');  
-        }
-        move(3,55);
-        for(int i=0;i<(*corpos)[3]->getLife();i++){
-          echochar('-');  
-        }
-
-        for(int i=1; i<=15;i++){
+        for(int i=1; i<=10;i++){
           move(14 - i, 58);
           echochar(' ');  
-        }
+        }        
+        if ((*corpos)[3]->getLife() > 0) {
+	        move(3,55);
+	        for(int i=0;i<=3;i++){
+	          echochar(' ');  
+	        }
+	        move(3,55);
+	        for(int i=0;i<(*corpos)[3]->getLife();i++){
+	          echochar('-');  
+	        }
 
-        for(int i=1; i<=(*tiros)[3]->get_forca();i++){
-          move(14 - i, 58);
-          echochar('|');  
-        }
+	        for(int i=1; i<=(*tiros)[3]->get_forca();i++){
+	          move(14 - i, 58);
+	          echochar('|');  
+       	 	}
+       	 }
+       	 else {
+       	 	move(3,52);
+        	for(int i=0; i<strlen(gameOver);i++){
+          		echochar(gameOver[i]);    
+        	}
+       	 }
       }
     }
   }
@@ -602,3 +640,4 @@ char Teclado::getchar() {
   this->ultima_captura = 0;
   return c;
 }
+

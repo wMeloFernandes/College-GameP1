@@ -103,6 +103,7 @@ int main () {
   /* Dispara thread para ouvir conexoes */
   pthread_create(&esperar_conexoes, NULL, wait_connections, NULL);
 
+  unsigned int turn = 0;
   int mFloorHited = 0;
 
   Fisica *f = new Fisica(lc, lt);
@@ -118,9 +119,13 @@ int main () {
   uint64_t deltaT;
   uint64_t T;
   uint64_t tiro = 0;
-  uint64_t contTiro;
   
   int i = 0;
+  int vetId[MAX_CONEXOES];
+
+  for (i = 0; i < MAX_CONEXOES; i++) {
+    vetId[i] = 0;
+  }
 
   Audio::Sample *asample;
   asample = new Audio::Sample();
@@ -143,7 +148,7 @@ int main () {
   T = get_now_ms();
   t1 = T;
 
-  while (1) {
+  while (running) {
 
     // Atualiza timers
     t0 = t1;
@@ -153,12 +158,12 @@ int main () {
     if(numberUsersOnline>0){
       if(oldUserNumberUsersOnline<numberUsersOnline){
         if(numberUsersOnline%2==0){
-          positionDefaultTeam2=positionDefaultTeam2+3;
+          positionDefaultTeam2=positionDefaultTeam2+5;
           lc->add_corpo(new Corpo(positionDefaultTeam2));
           lt->add_tiro(new Tiro(15,positionDefaultTeam2,15,1));
         }
         else{
-          positionDefaultTeam1=positionDefaultTeam1+3;
+          positionDefaultTeam1=positionDefaultTeam1+5;
           lc->add_corpo(new Corpo(positionDefaultTeam1));
           lt->add_tiro(new Tiro(15,positionDefaultTeam1,15,1));  
         }
@@ -173,17 +178,22 @@ int main () {
         tela->update(t1-T, tiro);
       }
 
-      if (input_buffer[0] == ' ' || tiro) {
-         f->tiro(deltaT, &mFloorHited,0);
-         tiro = 1;
+      if (tiro) {
+       for (i = 0; i < numberUsersOnline; i++) {
+         if (vetId[i] == 1) {
+           f->tiro(deltaT, &mFloorHited, i, numberUsersOnline);
 
-         if (mFloorHited) {
-           tiro = 0;
-           mFloorHited = 0;
-           T = get_now_ms();
-           t1 = T;
-         }
-
+           if (mFloorHited) {
+              vetId[i] = 0;
+              mFloorHited = 0;
+           }
+          }
+          if (vetId[0] == 0 and vetId[1] == 0 and vetId[2] == 0 and vetId[3] == 0) {
+            tiro = 0;
+          }
+          T = get_now_ms();
+          t1 = T;
+        }
       }
 
       for (user_iterator=0; user_iterator<MAX_CONEXOES; user_iterator++) {
@@ -193,24 +203,24 @@ int main () {
             //printf("Recebi mensagem de %d\n", user_iterator);
             if (strcmp(input_buffer, "END") == 0) running=0;
 
-            if (input_buffer[0] == 'w' && !tiro) {
+            if (input_buffer[0] == 'w') {
               f->movimento('w', user_iterator);
               asample->set_position(0);
               player->play(asample);
             }
-            if (input_buffer[0] == 's' && !tiro) {
+            if (input_buffer[0] == 's' ) {
               f->movimento('s', user_iterator);
               asample->set_position(0);
               player->play(asample);
              }
 
-            if (input_buffer[0] == '+' && !tiro) {
+            if (input_buffer[0] == '+') {
              f->alteraForca('+', user_iterator);
              asample->set_position(0);
               player->play(asample);
             }
 
-            if (input_buffer[0] == '-' && !tiro) {
+            if (input_buffer[0] == '-') {
              f->alteraForca('-', user_iterator);
              asample->set_position(0);
              player->play(asample);
@@ -223,29 +233,14 @@ int main () {
               break;
             }
 
-            if (input_buffer[0] == ' ' || tiro) {
-               f->tiro(deltaT, &mFloorHited,user_iterator);
+            if (input_buffer[0] == 'm') {
                tiro = 1;
-
-               if (mFloorHited) {
-                 tiro = 0;
-                 mFloorHited = 0;
-                 T = get_now_ms();
-                t1 = T;
-                }
+               vetId[user_iterator] = 1;
             }
           }
         }
       }
 
-      // Condicao de parada
-      if (!tiro) {
-        if ((t1-T) > 15000) {
-          std::this_thread::sleep_for (std::chrono::milliseconds(500));
-          T = get_now_ms();
-          t1 = T;
-        }
-      }
 
     }
     

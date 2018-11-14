@@ -54,8 +54,6 @@ int main() {
   uint64_t t1;
   uint64_t deltaT;
   uint64_t T;
-  uint64_t tiro = 0;
-  uint64_t contTiro;
   
   int i = 0;
   // Espera
@@ -82,22 +80,22 @@ int main() {
     char answer[5];
     answer[0]=c;
     
-    if (c == 'w' && !tiro) {
+    if (c == 'w') {
       send(socket_fd,answer, 5, 0);
     }
-    if (c == 's' && !tiro) {
-      send(socket_fd,answer, 5, 0);
-    }
-
-    if (c == '+' && !tiro) {
+    if (c == 's') {
       send(socket_fd,answer, 5, 0);
     }
 
-    if (c== '-' && !tiro) {
+    if (c == '+') {
       send(socket_fd,answer, 5, 0);
     }
 
-    if(c==' ' && !tiro){
+    if (c== '-') {
+      send(socket_fd,answer, 5, 0);
+    }
+
+    if(c=='m'){
       send(socket_fd,answer, 5, 0);
     }
 
