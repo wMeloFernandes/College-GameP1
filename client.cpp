@@ -47,35 +47,35 @@ void *receber_respostas(void *parametros) {
         oldUserNumberUsersOnline = DadosCorpo.getOldUserNumberUsersOnline();
         numberUsersOnline = DadosCorpo.getNumberUsersOnline();
         if(DadosCorpo.get_type()==1){
-          if( h < (*c_ptr).size() ) { //Atualiza corpo
+        	if( h < (*c_ptr).size() ) { //Atualiza corpo
     
-              (*c_ptr)[h]->update(  DadosCorpo.get_position());
-              (*c_ptr)[h]->updateLife(  DadosCorpo.getLife());
-              //oldUserNumberUsersOnline = DadosCorpo.getOldUserNumberUsersOnline();
-              //numberUsersOnline = DadosCorpo.getNumberUsersOnline();
-          }
-          else { //Novo corpo
-              Corpo *c1 = new Corpo(DadosCorpo.get_position());
-              lc->add_corpo(c1);
-              //oldUserNumberUsersOnline = DadosCorpo.getOldUserNumberUsersOnline();
-              //numberUsersOnline = DadosCorpo.getNumberUsersOnline();
-          }
-          h++;
+          		(*c_ptr)[h]->update(  DadosCorpo.get_position());
+          		(*c_ptr)[h]->updateLife(  DadosCorpo.getLife());
+          		//oldUserNumberUsersOnline = DadosCorpo.getOldUserNumberUsersOnline();
+          		//numberUsersOnline = DadosCorpo.getNumberUsersOnline();
+        	}
+        	else { //Novo corpo
+          		Corpo *c1 = new Corpo(DadosCorpo.get_position());
+          		lc->add_corpo(c1);
+          		//oldUserNumberUsersOnline = DadosCorpo.getOldUserNumberUsersOnline();
+          		//numberUsersOnline = DadosCorpo.getNumberUsersOnline();
+        	}
+        	h++;
         }
         else if(DadosCorpo.get_type()==2){
-          if( p < (*t_ptr).size() ) { //Atualiza tiro
+        	if( p < (*t_ptr).size() ) { //Atualiza tiro
     
-              (*t_ptr)[p]->update(DadosCorpo.get_velocidade(),DadosCorpo.get_posicaoHorizontal(),DadosCorpo.get_posicaoVertical(),DadosCorpo.get_forca());
-              //oldUserNumberUsersOnline = DadosCorpo.getOldUserNumberUsersOnline();
-              //numberUsersOnline = DadosCorpo.getNumberUsersOnline();
-          }
-          else { //Novo Tiro
-              Tiro *t1 = new Tiro(DadosCorpo.get_velocidade(),DadosCorpo.get_posicaoHorizontal(),DadosCorpo.get_posicaoVertical(),DadosCorpo.get_forca());
-              lt->add_tiro(t1);
-              //oldUserNumberUsersOnline = DadosCorpo.getOldUserNumberUsersOnline();
-              //numberUsersOnline = DadosCorpo.getNumberUsersOnline();
-          }
-          p++;
+          		(*t_ptr)[p]->update(DadosCorpo.get_velocidade(),DadosCorpo.get_posicaoHorizontal(),DadosCorpo.get_posicaoVertical(),DadosCorpo.get_forca());
+          		//oldUserNumberUsersOnline = DadosCorpo.getOldUserNumberUsersOnline();
+          		//numberUsersOnline = DadosCorpo.getNumberUsersOnline();
+        	}
+        	else { //Novo Tiro
+          		Tiro *t1 = new Tiro(DadosCorpo.get_velocidade(),DadosCorpo.get_posicaoHorizontal(),DadosCorpo.get_posicaoVertical(),DadosCorpo.get_forca());
+          		lt->add_tiro(t1);
+          		//oldUserNumberUsersOnline = DadosCorpo.getOldUserNumberUsersOnline();
+          		//numberUsersOnline = DadosCorpo.getNumberUsersOnline();
+        	}
+        	p++;
 
         }
       }
@@ -159,8 +159,8 @@ int main() {
       answer[0]=c;
       
       if (c == 'w') {
-        //std::cout << "TAMANHO LISTA CORPOS:" << lc->get_corpos()->size() << '\n';
-        //std::cout << "TAMANHO LISTA TIROS:" << lt->get_tiros()->size() << '\n';
+      	//std::cout << "TAMANHO LISTA CORPOS:" << lc->get_corpos()->size() << '\n';
+      	//std::cout << "TAMANHO LISTA TIROS:" << lt->get_tiros()->size() << '\n';
         send(socket_fd,answer, 5, 0);
         asample->set_position(0);
         player->play(asample);
@@ -184,7 +184,7 @@ int main() {
       }
 
       if(c=='m'){
-        //std::cout << "TAMANHO LISTA TIROS:" << lt->get_tiros()->size() << '\n';
+      	//std::cout << "TAMANHO LISTA TIROS:" << lt->get_tiros()->size() << '\n';
         send(socket_fd,answer, 5, 0);
         asample->set_position(0);
         player->play(asample);
