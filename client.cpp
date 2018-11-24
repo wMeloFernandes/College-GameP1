@@ -1,13 +1,14 @@
-
 #include <stdio.h>
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <string.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <pthread.h>
 #include <chrono>
 
+#include "serializable.hpp"
 #include "oo_model.hpp"
 
 using namespace std::chrono;
@@ -16,20 +17,71 @@ uint64_t get_now_ms() {
 }
 
 int socket_fd;
+ListaDeCorpos *lc;
+ListaDeTiros *lt;
+int oldUserNumberUsersOnline=0;
+int numberUsersOnline=0;
 
 void *receber_respostas(void *parametros) {
   /* Recebendo resposta */
-  char reply[60];
+  char reply[MAX_MSG_STRING];
   int msg_len;
   int msg_num;
   msg_num = 0;
+  RelevantData DadosCorpo(0,0,0,0,0,0,0,0,1);
+
   while(1) {
-    msg_len = recv(socket_fd, reply, 5, MSG_DONTWAIT);
+    msg_len = recv(socket_fd, reply, MAX_MSG_STRING, MSG_DONTWAIT);
+
     if (msg_len > 0) {
-      msg_num++;
+
+      char *ptr = strtok (reply,"#");
+      std::vector<Corpo *> *c_ptr = lc->get_corpos();
+      std::vector<Tiro *> *t_ptr = lt->get_tiros();
+      int h=0;
+      int p=0;
+      while(ptr != NULL) {
+        DadosCorpo.unserialize(ptr);
+        //DadosCorpo.dump();
+        ptr = strtok (NULL,"#\n\0");
+
+        if(DadosCorpo.get_type()==1){
+        	if( h < (*c_ptr).size() ) { //Atualiza corpo
+    
+          		(*c_ptr)[h]->update(  DadosCorpo.get_position());
+          		(*c_ptr)[h]->updateLife(  DadosCorpo.getLife());
+          		//oldUserNumberUsersOnline = DadosCorpo.getOldUserNumberUsersOnline();
+          		//numberUsersOnline = DadosCorpo.getNumberUsersOnline();
+        	}
+        	else { //Novo corpo
+          		Corpo *c1 = new Corpo(DadosCorpo.get_position());
+          		lc->add_corpo(c1);
+          		//oldUserNumberUsersOnline = DadosCorpo.getOldUserNumberUsersOnline();
+          		//numberUsersOnline = DadosCorpo.getNumberUsersOnline();
+        	}
+        	h++;
+        }
+        else if(DadosCorpo.get_type()==2){
+        	if( p < (*t_ptr).size() ) { //Atualiza tiro
+    
+          		(*t_ptr)[p]->update(DadosCorpo.get_velocidade(),DadosCorpo.get_posicaoHorizontal(),DadosCorpo.get_posicaoVertical(),DadosCorpo.get_forca());
+          		//oldUserNumberUsersOnline = DadosCorpo.getOldUserNumberUsersOnline();
+          		//numberUsersOnline = DadosCorpo.getNumberUsersOnline();
+        	}
+        	else { //Novo Tiro
+          		Tiro *t1 = new Tiro(DadosCorpo.get_velocidade(),DadosCorpo.get_posicaoHorizontal(),DadosCorpo.get_posicaoVertical(),DadosCorpo.get_forca());
+          		lt->add_tiro(t1);
+          		//oldUserNumberUsersOnline = DadosCorpo.getOldUserNumberUsersOnline();
+          		//numberUsersOnline = DadosCorpo.getNumberUsersOnline();
+        	}
+        	p++;
+
+        }
+      }
     }
   }
 }
+
 
 int main() {
   struct sockaddr_in target;
@@ -39,8 +91,8 @@ int main() {
 
   int mFloorHited = 0;
 
-  ListaDeCorpos *lc = new ListaDeCorpos();
-  ListaDeTiros *lt = new ListaDeTiros();
+  lc = new ListaDeCorpos();
+  lt = new ListaDeTiros();
 
   Fisica *f = new Fisica(lc, lt);
 
@@ -54,8 +106,19 @@ int main() {
   uint64_t t1;
   uint64_t deltaT;
   uint64_t T;
+  uint64_t tiro = 0;
   
   int i = 0;
+
+  Audio::Sample *asample;
+  asample = new Audio::Sample();
+  asample->load("assets/blip.dat");
+
+  Audio::Player *player;
+  player = new Audio::Player();
+  freopen("/dev/null", "w", stderr);
+  player->init();
+  
   // Espera
   while (1) {
     std::this_thread::sleep_for (std::chrono::milliseconds(1));
@@ -63,6 +126,8 @@ int main() {
     if (t1-t0 > 500) break;
   }
 
+  player->play(asample);
+  
   T = get_now_ms();
   t1 = T;
   target.sin_family = AF_INET;
@@ -76,34 +141,64 @@ int main() {
   pthread_create(&receiver, NULL, receber_respostas, NULL);
 
   while(1) {
-    char c = teclado->getchar();
-    char answer[5];
-    answer[0]=c;
+
+    if(lc->get_corpos()->size()>0){
+
+      // if(oldUserNumberUsersOnline<numberUsersOnline){
+      //   tela = new Tela(lc, lt, 20, 20, 20, 20);
+      //   tela->init();
+      // }
+      // else{
+      // // Atualiza tela
+      //   tela->update(t1-T, tiro);
+      // }
+
+      //tela = new Tela(lc, lt, 20, 20, 20, 20);
+      //tela->init();
+      //tela->update(t1-T, tiro);
+      char c = teclado->getchar();
+      char answer[5];
+      answer[0]=c;
+      
+      if (c == 'w') {
+      	//std::cout << "TAMANHO LISTA CORPOS:" << lc->get_corpos()->size() << '\n';
+      	//std::cout << "TAMANHO LISTA TIROS:" << lt->get_tiros()->size() << '\n';
+        send(socket_fd,answer, 5, 0);
+        asample->set_position(0);
+        player->play(asample);
+      }
+      if (c == 's') {
+        send(socket_fd,answer, 5, 0);
+        asample->set_position(0);
+        player->play(asample);
+      }
+
+      if (c == '+') {
+        send(socket_fd,answer, 5, 0);
+        asample->set_position(0);
+        player->play(asample);
+      }
+
+      if (c== '-') {
+        send(socket_fd,answer, 5, 0);
+        asample->set_position(0);
+        player->play(asample);
+      }
+
+      if(c=='m'){
+      	//std::cout << "TAMANHO LISTA TIROS:" << lt->get_tiros()->size() << '\n';
+        send(socket_fd,answer, 5, 0);
+        asample->set_position(0);
+        player->play(asample);
+      }
+
+      if (c=='q') {
+        send(socket_fd,answer, 5, 0);
+      }
+    }
     
-    if (c == 'w') {
-      send(socket_fd,answer, 5, 0);
-    }
-    if (c == 's') {
-      send(socket_fd,answer, 5, 0);
-    }
-
-    if (c == '+') {
-      send(socket_fd,answer, 5, 0);
-    }
-
-    if (c== '-') {
-      send(socket_fd,answer, 5, 0);
-    }
-
-    if(c=='m'){
-      send(socket_fd,answer, 5, 0);
-    }
-
-    if (c=='q') {
-      send(socket_fd,answer, 5, 0);
-    }
   }
-
+  player->stop();
   tela->stop();
   teclado->stop();
   return 0;

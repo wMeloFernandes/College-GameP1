@@ -3,6 +3,7 @@
 #include <thread>
 #include <vector>
 #include <string.h>
+#include <algorithm>
 #include <unistd.h>
 #include <pthread.h>
 #include <sys/types.h>
@@ -10,6 +11,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
+#include "serializable.hpp"
 #include "oo_model.hpp"
 #define MAX_CONEXOES 4
 
@@ -38,8 +40,6 @@ int adicionar_conexao(int new_connection_fd) {
       conexao_usada[i] = 1;
       connection_fd[i] = new_connection_fd;
       numberUsersOnline++;
-      //lc->add_corpo(new Corpo(10));
-      //lt->add_tiro(new Tiro(0,10,10,1));
       return i;
     }
   }
@@ -71,6 +71,8 @@ void *wait_connections(void *parameters) {
 }
 
 int main () {
+  std::string send_buffer;
+  std::string send_buffer2;
   pthread_t esperar_conexoes;
   int msglen;
   int user_iterator;
@@ -119,6 +121,8 @@ int main () {
   uint64_t deltaT;
   uint64_t T;
   uint64_t tiro = 0;
+  int v1=0;
+  int v2=0;
   
   int i = 0;
   int vetId[MAX_CONEXOES];
@@ -127,14 +131,6 @@ int main () {
     vetId[i] = 0;
   }
 
-  Audio::Sample *asample;
-  asample = new Audio::Sample();
-  asample->load("assets/blip.dat");
-
-  Audio::Player *player;
-  player = new Audio::Player();
-  freopen("/dev/null", "w", stderr);
-  player->init();
 
   // Espera
   while (1) {
@@ -143,7 +139,6 @@ int main () {
     if (t1-t0 > 500) break;
   }
 
-  player->play(asample);
   
   T = get_now_ms();
   t1 = T;
@@ -156,6 +151,8 @@ int main () {
     deltaT = t1-t0;
 
     if(numberUsersOnline>0){
+    	v1=oldUserNumberUsersOnline;
+    	v2=numberUsersOnline;
       if(oldUserNumberUsersOnline<numberUsersOnline){
         if(numberUsersOnline%2==0){
           positionDefaultTeam2=positionDefaultTeam2+5;
@@ -205,25 +202,17 @@ int main () {
 
             if (input_buffer[0] == 'w') {
               f->movimento('w', user_iterator);
-              asample->set_position(0);
-              player->play(asample);
             }
             if (input_buffer[0] == 's' ) {
               f->movimento('s', user_iterator);
-              asample->set_position(0);
-              player->play(asample);
              }
 
             if (input_buffer[0] == '+') {
              f->alteraForca('+', user_iterator);
-             asample->set_position(0);
-              player->play(asample);
             }
 
             if (input_buffer[0] == '-') {
              f->alteraForca('-', user_iterator);
-             asample->set_position(0);
-             player->play(asample);
             }
 
             if (input_buffer[0] =='q') {
@@ -243,11 +232,68 @@ int main () {
 
 
     }
+    send_buffer = '#';
+    std::vector<Corpo *> *c = lc->get_corpos();
+    std::vector<Tiro *> *t = lt->get_tiros();
+    for(int i=0; i < c->size(); i++){
+    RelevantData	DadosCorpo( v1 ,\
+                                v2,\
+                              (*c)[i]->get_posicao(),\
+                              (*c)[i]->getLife(),\
+                              0,\
+                              0,\
+                              0,\
+                              0,\
+                              1
+                                        );
+    std::string buffer(100, '#');
+    DadosCorpo.serialize(buffer);
+    //DadosCorpo.dump();
+    send_buffer = send_buffer + buffer;
+    std::replace( send_buffer.begin(), send_buffer.end(), '\0', '#'); // replace all '\0' to '#'
+    send_buffer+='\0';
+
+    	if(i==c->size()-1){
+    		for(int j = 0; j < t->size();j++){
+    			RelevantData	DadosCorpo( v1 ,\
+                                v2,\
+                              0,\
+                              0,\
+                              (*t)[j]->get_velocidade(),\
+                              (*t)[j]->get_posicaoHorizontal(),\
+                              (*t)[j]->get_posicaoVertical(),\
+                              (*t)[j]->get_forca(),\
+                              2
+                                        );
+		    std::string buffer(100, '#');
+		    DadosCorpo.serialize(buffer);
+		    //DadosCorpo.dump();
+		    send_buffer = send_buffer + buffer;
+		    std::replace( send_buffer.begin(), send_buffer.end(), '\0', '#'); // replace all '\0' to '#'
+		    send_buffer+='\0';
+		    		}
+    	}
+    }
+
+
+
+
+    
+
+      for (int ret=0; ret<MAX_CONEXOES; ret++) {
+        if (conexao_usada[ret] == 1) {
+          //Avisando user i
+          if (send(connection_fd[ret], send_buffer.c_str() , MAX_MSG_STRING, MSG_NOSIGNAL) == -1) { //editei para enviar buffer serializado
+                            /* Usuario desconectou!?? */
+          //printf("Usuario %d desconectou!\n", ret);
+          remover_conexao(ret);
+          }
+        }
+      }
     
     std::this_thread::sleep_for (std::chrono::milliseconds(100));
     i++;
   }
-  player->stop();
   tela->stop();
   teclado->stop();
   return 0;
