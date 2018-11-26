@@ -61,11 +61,6 @@ void *wait_connections(void *parameters) {
   while(running) {
     conn_fd = accept(socket_fd, (struct sockaddr*)&client, &client_size);
     user_id = adicionar_conexao(conn_fd);
-    if (user_id != -1) {
-      //printf("Novo usuario chegou! ID=%d\n", user_id);
-    } else {
-      //printf("Maximo de usuarios atingido!\n");
-    }
   }
   return NULL;
 }
@@ -170,8 +165,8 @@ int main () {
         tela = new Tela(lc, lt, 20, 20, 20, 20);
         tela->init();
       }
-      else{
-      // Atualiza tela
+      else {
+        // Atualiza tela
         tela->update(t1-T, tiro);
       }
 
@@ -236,57 +231,27 @@ int main () {
     std::vector<Corpo *> *c = lc->get_corpos();
     std::vector<Tiro *> *t = lt->get_tiros();
     for(int i=0; i < c->size(); i++){
-    RelevantData	DadosCorpo( v1 ,\
-                                v2,\
-                              (*c)[i]->get_posicao(),\
-                              (*c)[i]->getLife(),\
-                              0,\
-                              0,\
-                              0,\
-                              0,\
-                              1
-                                        );
-    std::string buffer(100, '#');
-    DadosCorpo.serialize(buffer);
-    //DadosCorpo.dump();
-    send_buffer = send_buffer + buffer;
-    std::replace( send_buffer.begin(), send_buffer.end(), '\0', '#'); // replace all '\0' to '#'
-    send_buffer+='\0';
-
-    	if(i==c->size()-1){
-    		for(int j = 0; j < t->size();j++){
-    			RelevantData	DadosCorpo( v1 ,\
-                                v2,\
-                              0,\
-                              0,\
-                              (*t)[j]->get_velocidade(),\
-                              (*t)[j]->get_posicaoHorizontal(),\
-                              (*t)[j]->get_posicaoVertical(),\
-                              (*t)[j]->get_forca(),\
-                              2
-                                        );
-		    std::string buffer(100, '#');
-		    DadosCorpo.serialize(buffer);
-		    //DadosCorpo.dump();
-		    send_buffer = send_buffer + buffer;
-		    std::replace( send_buffer.begin(), send_buffer.end(), '\0', '#'); // replace all '\0' to '#'
-		    send_buffer+='\0';
-		    		}
-    	}
+      RelevantData	DadosCorpo( v1 ,\
+                                  v2,\
+                                (*c)[i]->get_posicao(),\
+                                (*c)[i]->getLife(),\
+                                (*t)[i]->get_velocidade(),\
+                                (*t)[i]->get_posicaoHorizontal(),\
+                                (*t)[i]->get_posicaoVertical(),\
+                                (*t)[i]->get_forca(),\
+                                1
+                                          );
+      std::string buffer(100, '#');
+      DadosCorpo.serialize(buffer);
+      send_buffer = send_buffer + buffer;
+      std::replace( send_buffer.begin(), send_buffer.end(), '\0', '#'); // replace all '\0' to '#'
+      send_buffer+='\0';
     }
-
-
-
-
-    
 
       for (int ret=0; ret<MAX_CONEXOES; ret++) {
         if (conexao_usada[ret] == 1) {
-          //Avisando user i
           if (send(connection_fd[ret], send_buffer.c_str() , MAX_MSG_STRING, MSG_NOSIGNAL) == -1) { //editei para enviar buffer serializado
-                            /* Usuario desconectou!?? */
-          //printf("Usuario %d desconectou!\n", ret);
-          remover_conexao(ret);
+            remover_conexao(ret);
           }
         }
       }

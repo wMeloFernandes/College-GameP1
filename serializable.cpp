@@ -9,16 +9,16 @@ RelevantData::RelevantData() {
 };
 
 
-RelevantData::RelevantData(int oldUserNumberUsersOnline,int numberUsersOnline,float position, int life,float velocidade, float posicaoHorizontal, float posicaoVertical, float forca, int type) {
+RelevantData::RelevantData(int oldUserNumberUsersOnline,int numberUsersOnline,float position, int life,float velocidade, float posicaoHorizontal, float posicaoVertical, int forca, int type) {
   this->data.oldUserNumberUsersOnline = oldUserNumberUsersOnline;
   this->data.numberUsersOnline = numberUsersOnline;  
   this->data.position = position;
   this->data.life = life;
   this->data.velocidade = velocidade;
   this->data.posicaoHorizontal = posicaoHorizontal;
-  this->data.posicaoVertical =posicaoVertical ;
+  this->data.posicaoVertical = posicaoVertical;
   this->data.forca = forca;
-  this->data.type =type	 ;
+  this->data.type = type;
    
 }
 
@@ -56,7 +56,7 @@ float RelevantData::get_posicaoVertical(){
 	return this->data.posicaoVertical;
 }
 
-float RelevantData::get_forca(){
+int RelevantData::get_forca(){
 	return this->data.forca;
 }
 
@@ -65,13 +65,13 @@ int RelevantData::get_type(){
 }
 
 void RelevantData::serialize(std::string &buffer_out) {
-   sprintf((char*) buffer_out.c_str() , "%d %d %f %d %f %f %f %f %d", this->data.oldUserNumberUsersOnline,this->data.numberUsersOnline,this->data.position, this->data.life,this->data.velocidade, this->data.posicaoHorizontal,this->data.posicaoVertical,this->data.forca,this->data.type);
+   sprintf((char*) buffer_out.c_str() , "%d %d %f %d %f %f %f %d %d", this->data.oldUserNumberUsersOnline,this->data.numberUsersOnline,this->data.position, this->data.life,this->data.velocidade, this->data.posicaoHorizontal,this->data.posicaoVertical,this->data.forca,this->data.type);
 }
 
 void RelevantData::unserialize(std::string buffer_in) {
   float a;
   int c,d,e;
-  sscanf(buffer_in.c_str(), "%d %d %f %d %f %f %f %f %d", &this->data.oldUserNumberUsersOnline,&this->data.numberUsersOnline,&this->data.position, &this->data.life,&this->data.velocidade, &this->data.posicaoHorizontal,&this->data.posicaoVertical,&this->data.forca,&this->data.type);
+  sscanf(buffer_in.c_str(), "%d %d %f %d %f %f %f %d %d", &this->data.oldUserNumberUsersOnline,&this->data.numberUsersOnline,&this->data.position, &this->data.life,&this->data.velocidade, &this->data.posicaoHorizontal,&this->data.posicaoVertical,&this->data.forca,&this->data.type);
 }
 
 void RelevantData::dump() {

@@ -171,18 +171,18 @@ void Player::stop() {
 
 }
 
-Tiro::Tiro (float velocidade, float posicaoHorizontal, float posicaoVertical, float forca) {
+Tiro::Tiro (float velocidade, float posicaoHorizontal, float posicaoVertical, int forca) {
   this->velocidade = velocidade;
   this->posicaoHorizontal = posicaoHorizontal;
   this->posicaoVertical = posicaoVertical;
   this->forca = forca;
 }
 
-void Tiro::update(float nova_velocidade, float nova_posicao_horizontal, float nova_posicao_vertical, float nova_forca) {
+void Tiro::update(float nova_velocidade, float nova_posicao_horizontal, float nova_posicao_vertical, int nova_forca) {
   this->velocidade = nova_velocidade;
   this->posicaoHorizontal = nova_posicao_horizontal;
   this->posicaoVertical = nova_posicao_vertical;
-  this->forca = forca;
+  this->forca = nova_forca;
 }
 
 float Tiro::get_velocidade() {
@@ -197,7 +197,7 @@ float Tiro::get_posicaoVertical() {
   return this->posicaoVertical;
 }
 
-float Tiro::get_forca(){
+int Tiro::get_forca(){
   return this->forca;
 }
 

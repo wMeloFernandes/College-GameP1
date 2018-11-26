@@ -15,7 +15,7 @@ struct DataContainer {
   float velocidade;
   float posicaoHorizontal;
   float posicaoVertical;
-  float forca;
+  int forca;
   int type;
 };
 
@@ -26,7 +26,7 @@ class RelevantData {
 
   public:
     RelevantData();
-    RelevantData(int oldUserNumberUsersOnline,int numberUsersOnline,float position, int life,float velocidade, float posicaoHorizontal, float posicaoVertical, float forca, int type);
+    RelevantData(int oldUserNumberUsersOnline,int numberUsersOnline,float position, int life,float velocidade, float posicaoHorizontal, float posicaoVertical, int forca, int type);
     RelevantData(std::string buffer_in);
     void serialize(std::string &buffer_out);
     void unserialize(std::string buffer_in);
@@ -38,7 +38,7 @@ class RelevantData {
     float get_velocidade();
     float get_posicaoHorizontal();
     float get_posicaoVertical();
-    float get_forca();
+    int get_forca();
     int get_type();
 };
 

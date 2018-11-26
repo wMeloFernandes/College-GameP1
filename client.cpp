@@ -39,44 +39,24 @@ void *receber_respostas(void *parametros) {
       std::vector<Corpo *> *c_ptr = lc->get_corpos();
       std::vector<Tiro *> *t_ptr = lt->get_tiros();
       int h=0;
-      int p=0;
       while(ptr != NULL) {
         DadosCorpo.unserialize(ptr);
-        //DadosCorpo.dump();
         ptr = strtok (NULL,"#\n\0");
         oldUserNumberUsersOnline = DadosCorpo.getOldUserNumberUsersOnline();
         numberUsersOnline = DadosCorpo.getNumberUsersOnline();
         if(DadosCorpo.get_type()==1){
         	if( h < (*c_ptr).size() ) { //Atualiza corpo
-    
-          		(*c_ptr)[h]->update(  DadosCorpo.get_position());
-          		(*c_ptr)[h]->updateLife(  DadosCorpo.getLife());
-          		//oldUserNumberUsersOnline = DadosCorpo.getOldUserNumberUsersOnline();
-          		//numberUsersOnline = DadosCorpo.getNumberUsersOnline();
+          		(*c_ptr)[h]->update(DadosCorpo.get_position());
+          		(*c_ptr)[h]->updateLife(DadosCorpo.getLife());
+          		(*t_ptr)[h]->update(DadosCorpo.get_velocidade(),DadosCorpo.get_posicaoHorizontal(),DadosCorpo.get_posicaoVertical(),DadosCorpo.get_forca());
         	}
         	else { //Novo corpo
           		Corpo *c1 = new Corpo(DadosCorpo.get_position());
           		lc->add_corpo(c1);
-          		//oldUserNumberUsersOnline = DadosCorpo.getOldUserNumberUsersOnline();
-          		//numberUsersOnline = DadosCorpo.getNumberUsersOnline();
-        	}
-        	h++;
-        }
-        else if(DadosCorpo.get_type()==2){
-        	if( p < (*t_ptr).size() ) { //Atualiza tiro
-    
-          		(*t_ptr)[p]->update(DadosCorpo.get_velocidade(),DadosCorpo.get_posicaoHorizontal(),DadosCorpo.get_posicaoVertical(),DadosCorpo.get_forca());
-          		//oldUserNumberUsersOnline = DadosCorpo.getOldUserNumberUsersOnline();
-          		//numberUsersOnline = DadosCorpo.getNumberUsersOnline();
-        	}
-        	else { //Novo Tiro
           		Tiro *t1 = new Tiro(DadosCorpo.get_velocidade(),DadosCorpo.get_posicaoHorizontal(),DadosCorpo.get_posicaoVertical(),DadosCorpo.get_forca());
           		lt->add_tiro(t1);
-          		//oldUserNumberUsersOnline = DadosCorpo.getOldUserNumberUsersOnline();
-          		//numberUsersOnline = DadosCorpo.getNumberUsersOnline();
         	}
-        	p++;
-
+        	h++;
         }
       }
     }
@@ -194,7 +174,7 @@ int main() {
         send(socket_fd,answer, 5, 0);
       }
     }
-    
+    std::this_thread::sleep_for (std::chrono::milliseconds(100));  
   }
   player->stop();
   tela->stop();

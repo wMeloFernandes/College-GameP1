@@ -78,15 +78,15 @@ class Tiro {
   float velocidade;
   float posicaoHorizontal;
   float posicaoVertical;
-  float forca;
+  int forca;
 
   public:
-  Tiro(float velocidade, float posicaoHorizontal, float posicaoVertical, float forca);
-  void update(float nova_velocidade, float nova_posicao_horizontal, float nova_posicao_vertical, float nova_forca);
+  Tiro(float velocidade, float posicaoHorizontal, float posicaoVertical, int forca);
+  void update(float nova_velocidade, float nova_posicao_horizontal, float nova_posicao_vertical, int nova_forca);
   float get_velocidade();
   float get_posicaoHorizontal();
   float get_posicaoVertical();
-  float get_forca();
+  int get_forca();
   void setDownForca();
   void setUpForca();
 };
