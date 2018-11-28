@@ -5,7 +5,7 @@
 #include <iostream>
 #include <string>
 
-#define MAX_MSG_STRING 1000000
+#define MAX_OBJECT_SIZE 1000000
 
 struct DataContainer {
   int oldUserNumberUsersOnline;

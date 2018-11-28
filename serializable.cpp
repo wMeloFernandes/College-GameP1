@@ -69,8 +69,6 @@ void RelevantData::serialize(std::string &buffer_out) {
 }
 
 void RelevantData::unserialize(std::string buffer_in) {
-  float a;
-  int c,d,e;
   sscanf(buffer_in.c_str(), "%d %d %f %d %f %f %f %d %d", &this->data.oldUserNumberUsersOnline,&this->data.numberUsersOnline,&this->data.position, &this->data.life,&this->data.velocidade, &this->data.posicaoHorizontal,&this->data.posicaoVertical,&this->data.forca,&this->data.type);
 }
 

@@ -24,14 +24,13 @@ int numberUsersOnline=0;
 
 void *receber_respostas(void *parametros) {
   /* Recebendo resposta */
-  char reply[MAX_MSG_STRING];
-  int msg_len;
-  int msg_num;
-  msg_num = 0;
   RelevantData DadosCorpo(0,0,0,0,0,0,0,0,1);
+  char reply[MAX_OBJECT_SIZE];
+  int msg_len;
+  int msg_num = 0 ;
 
   while(1) {
-    msg_len = recv(socket_fd, reply, MAX_MSG_STRING, MSG_DONTWAIT);
+    msg_len = recv(socket_fd, reply, MAX_OBJECT_SIZE, MSG_DONTWAIT);
 
     if (msg_len > 0) {
 
@@ -41,7 +40,7 @@ void *receber_respostas(void *parametros) {
       int h=0;
       while(ptr != NULL) {
         DadosCorpo.unserialize(ptr);
-        ptr = strtok (NULL,"#\n\0");
+        ptr = strtok (NULL, "#\n\0" );//pegando estrutura
         oldUserNumberUsersOnline = DadosCorpo.getOldUserNumberUsersOnline();
         numberUsersOnline = DadosCorpo.getNumberUsersOnline();
         if(DadosCorpo.get_type()==1){

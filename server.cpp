@@ -241,16 +241,16 @@ int main () {
                                 (*t)[i]->get_forca(),\
                                 1
                                           );
-      std::string buffer(100, '#');
+      std::string buffer(100, '#');//fecha objeto
       DadosCorpo.serialize(buffer);
       send_buffer = send_buffer + buffer;
-      std::replace( send_buffer.begin(), send_buffer.end(), '\0', '#'); // replace all '\0' to '#'
+      std::replace( send_buffer.begin(), send_buffer.end(), '\0', '#');
       send_buffer+='\0';
     }
 
       for (int ret=0; ret<MAX_CONEXOES; ret++) {
         if (conexao_usada[ret] == 1) {
-          if (send(connection_fd[ret], send_buffer.c_str() , MAX_MSG_STRING, MSG_NOSIGNAL) == -1) { //editei para enviar buffer serializado
+          if (send(connection_fd[ret], send_buffer.c_str() , MAX_OBJECT_SIZE, MSG_NOSIGNAL) == -1) { //editei para enviar buffer serializado
             remover_conexao(ret);
           }
         }
